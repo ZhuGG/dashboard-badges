@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Production de Badges – Gestion des Commandes</title>
+  <!-- Lien vers la feuille de style -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Production de Badges</h1>
+    <p>Gérez vos commandes de badges métalliques avec élégance</p>
+  </header>
+
+  <nav aria-label="Navigation principale">
+    <ul>
+      <li><a href="#session">Session</a></li>
+      <li><a href="#stats">Statistiques</a></li>
+      <li><a href="#email">Envoyer Email</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <!-- Section Session de Production -->
+    <section id="session">
+      <h2>Session de Production</h2>
+      <!-- Initialisation de la session -->
+      <div id="sessionInit">
+        <div class="form-group">
+          <label for="clientName">Nom du Client :</label>
+          <input type="text" id="clientName" placeholder="Entrer le nom du client" required>
+        </div>
+        <div class="form-group">
+          <label for="commandName">Nom de la Commande :</label>
+          <input type="text" id="commandName" placeholder="Entrer le nom de la commande" required>
+        </div>
+        <button id="startSessionButton">Démarrer Session</button>
+      </div>
+      <!-- Zone active de la session -->
+      <div id="activeSession" style="display:none;">
+        <p>Client : <strong id="displayClientName"></strong></p>
+        <p>Commande : <strong id="displayCommandName"></strong></p>
+        <p>Démarré à : <strong><span id="sessionStartTime"></span></strong></p>
+        <p>Statut : <strong><span id="sessionStatus">En cours</span></strong></p>
+        <p>Pause totale : <strong><span id="totalPauseTime">0</span></strong> minutes</p>
+        <button id="pauseButton">Pause</button>
+        <button id="finishSessionButton">Terminer Session</button>
+        <hr>
+        <h3>Ajouter une commande de badge</h3>
+        <form id="orderForm">
+          <div class="form-group">
+            <label for="badgeSize">Taille du badge :</label>
+            <select id="badgeSize" required>
+              <option value="">Sélectionner</option>
+              <option value="25">25 mm</option>
+              <option value="38">38 mm</option>
+              <option value="45">45 mm</option>
+              <option value="58">58 mm</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="accessory">Accessoire :</label>
+            <select id="accessory" required>
+              <option value="">Sélectionner</option>
+              <option value="Épingles">Épingles</option>
+              <option value="Attache Magnétique Textile">Attache Magnétique Textile</option>
+              <option value="Aimant Décoratif">Aimant Décoratif</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Finition :</label>
+            <label><input type="radio" name="finish" value="Mate" required> Mate</label>
+            <label><input type="radio" name="finish" value="Brillante"> Brillante</label>
+          </div>
+          <div class="form-group">
+            <label for="quantity">Quantité :</label>
+            <input type="number" id="quantity" min="1" value="1" required>
+          </div>
+          <button type="submit">Ajouter Commande</button>
+        </form>
+        <div class="table-container">
+          <table id="ordersTable">
+            <thead>
+              <tr>
+                <th>Heure</th>
+                <th>Taille</th>
+                <th>Accessoire</th>
+                <th>Finition</th>
+                <th>Quantité</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Les commandes de la session seront affichées ici -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section Statistiques et Graphique -->
+    <section id="stats">
+      <h2>Statistiques</h2>
+      <div id="statsSummary">
+        <p>Total Commandes : <span id="totalOrders">0</span></p>
+        <p>Total Quantité : <span id="totalQuantity">0</span></p>
+        <div id="lastSessionStats"></div>
+      </div>
+      <canvas id="statsChart" aria-label="Graphique des commandes" role="img"></canvas>
+    </section>
+
+    <!-- Section Envoi Email -->
+    <section id="email">
+      <h2>Envoyer Email</h2>
+      <p>Envoyez le récapitulatif de la dernière session à Pan.</p>
+      <button id="sendEmailButton">Envoyer Email</button>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Production Inc. Tous droits réservés.</p>
+  </footer>
+
+  <!-- Lien vers le fichier JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>
