@@ -1,78 +1,83 @@
-<main>
-  <div class="synth-anim">
-  <div class="badge-loader">
-    <div class="badge-outer"></div>
-    <div class="badge-inner"></div>
-    <div class="badge-dot"></div>
-  </div>
-</div>
-
-  <div class="synth-anim">
-    <div class="badge-loader">
-      <div class="badge-circle"></div>
-      <div class="badge-circle badge-circle2"></div>
-      <div class="badge-dot"></div>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>V-MACH · Prod Badges</title>
+  <link href="https://fonts.googleapis.com/css?family=Inter:400,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <!-- Animation Badge -->
+    <div class="synth-anim">
+      <div class="badge-loader">
+        <div class="badge-outer"></div>
+        <div class="badge-inner"></div>
+        <div class="badge-dot"></div>
+      </div>
     </div>
-  </div>
 
-  <div class="filters">
-    <button data-filter="all" class="active">Toutes</button>
-    <button data-filter="wait">En attente</button>
-    <button data-filter="pause">En pause</button>
-    <button data-filter="done">Terminées</button>
-    <button class="theme-toggle" title="Changer thème" aria-label="Changer thème">🌙</button>
-  </div>
+    <div class="filters">
+      <button data-filter="all" class="active">Toutes</button>
+      <button data-filter="wait">En attente</button>
+      <button data-filter="pause">En pause</button>
+      <button data-filter="done">Terminées</button>
+      <button class="theme-toggle" title="Changer thème" aria-label="Changer thème">🌙</button>
+    </div>
 
-  <input type="search" id="search" class="search-bar" placeholder="Recherche badge, client, type…" autocomplete="off" />
+    <input type="search" id="search" class="search-bar" placeholder="Recherche badge, client, type…" autocomplete="off" />
 
-  <form id="form-add" autocomplete="off" style="display:none;">
-    <input name="client" list="client-list" required placeholder="Client *" />
-    <datalist id="client-list">
-      <option>TU</option>
-      <option>Cléacom</option>
-      <option>Ope5</option>
-      <option>Fullfiler</option>
-      <option>MCOM</option>
-    </datalist>
-    <input name="name" id="name" required placeholder="Nom badge *" autocomplete="off" />
-    <div class="autocomplete-list" id="autocomplete-list" style="display:none;"></div>
-    <input name="qty" type="number" min="1" required placeholder="Quantité *" autocomplete="off" />
-    <select name="diam" required>
-      <option value="">Diamètre/format *</option>
-      <option>28 mm</option>
-      <option>38 mm</option>
-      <option>45 mm</option>
-      <option>58 mm</option>
-      <option>89 mm</option>
-      <option>Rect. 80 × 50 mm</option>
-    </select>
-    <select name="finish" required>
-      <option value="">Finition *</option>
-      <option>Mat</option>
-      <option>Brillant</option>
-    </select>
-    <select name="type" required>
-      <option value="">Attache *</option>
-      <option>Épingle</option>
-      <option>Aimant décoratif</option>
-      <option>Magnétique textile</option>
-    </select>
-    <select name="carton" required>
-      <option value="">Carton *</option>
-      <option>Boîte A11</option>
-      <option>Boîte A12</option>
-      <option>Boîte A14</option>
-    </select>
-    <button type="submit">Ajouter</button>
-  </form>
+    <form id="form-add" autocomplete="off" style="display:none;">
+      <input name="client" list="client-list" required placeholder="Client *" />
+      <datalist id="client-list">
+        <option>TU</option>
+        <option>Cléacom</option>
+        <option>Ope5</option>
+        <option>Fullfiler</option>
+        <option>MCOM</option>
+      </datalist>
+      <input name="name" id="name" required placeholder="Nom badge *" autocomplete="off" />
+      <div class="autocomplete-list" id="autocomplete-list" style="display:none;"></div>
+      <input name="qty" type="number" min="1" required placeholder="Quantité *" autocomplete="off" />
+      <select name="diam" required>
+        <option value="">Diamètre/format *</option>
+        <option>28 mm</option>
+        <option>38 mm</option>
+        <option>45 mm</option>
+        <option>58 mm</option>
+        <option>89 mm</option>
+        <option>Rect. 80 × 50 mm</option>
+      </select>
+      <select name="finish" required>
+        <option value="">Finition *</option>
+        <option>Mat</option>
+        <option>Brillant</option>
+      </select>
+      <select name="type" required>
+        <option value="">Attache *</option>
+        <option>Épingle</option>
+        <option>Aimant décoratif</option>
+        <option>Magnétique textile</option>
+      </select>
+      <select name="carton" required>
+        <option value="">Carton *</option>
+        <option>Boîte A11</option>
+        <option>Boîte A12</option>
+        <option>Boîte A14</option>
+      </select>
+      <button type="submit">Ajouter</button>
+    </form>
 
-  <div id="cmd-list"></div>
+    <div id="cmd-list"></div>
 
-  <div class="export-btn">
-    <button id="export-csv">Export CSV</button>
-    <button id="export-mail">Envoyer par mail</button>
-  </div>
-</main>
-<button class="fab" id="fab">＋</button>
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-<script src="app.js"></script>
+    <div class="export-btn">
+      <button id="export-csv">Export CSV</button>
+      <button id="export-mail">Envoyer par mail</button>
+    </div>
+  </main>
+  <button class="fab" id="fab">＋</button>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
