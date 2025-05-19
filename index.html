@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>V-MACH · Prod Badges</title>
+  <title>Production Badges V-MACH</title>
   <link href="https://fonts.googleapis.com/css?family=Inter:400,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main>
-    <!-- Animation Badge -->
-    <div class="synth-anim">
+    <div class="synth-anim" id="synth-anim">
       <div class="badge-loader">
         <div class="badge-outer"></div>
         <div class="badge-inner"></div>
@@ -28,7 +27,7 @@
 
     <input type="search" id="search" class="search-bar" placeholder="Recherche badge, client, type…" autocomplete="off" />
 
-    <form id="form-add" autocomplete="off" style="display:none;">
+    <form id="form-add" autocomplete="off" style="display:none">
       <input name="client" list="client-list" required placeholder="Client *" />
       <datalist id="client-list">
         <option>TU</option>
@@ -76,7 +75,7 @@
       <button id="export-mail">Envoyer par mail</button>
     </div>
   </main>
-  <button class="fab" id="fab">＋</button>
+  <button class="fab" id="fab" title="Nouvelle commande">＋</button>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <script src="app.js"></script>
 </body>
