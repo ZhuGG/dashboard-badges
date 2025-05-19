@@ -64,7 +64,29 @@ main {
   height: 100px;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: center; 
+  @keyframes badge-spin-tilt {
+  0%   { transform: rotate(0deg) scale(1) skewY(0deg);}
+  48%  { transform: rotate(180deg) scale(1.06) skewY(3deg);}
+  50%  { transform: rotate(180deg) scale(1.08) skewY(-3deg);}
+  52%  { transform: rotate(180deg) scale(1.06) skewY(3deg);}
+  100% { transform: rotate(360deg) scale(1) skewY(0deg);}
+}
+.badge-loader {
+  /* le reste inchangé */
+  animation: badge-spin-tilt 10s cubic-bezier(.7,0,.2,1) infinite;
+}
+.badge-outer {
+  /* dégradé évolutif */
+  border-image: linear-gradient(
+    120deg, 
+    var(--primary), 
+    var(--primary-accent), 
+    var(--secondary),
+    #ff92f4, #00fff7, var(--primary) 95%
+  ) 1;
+}
+
 }
 
 .badge-outer,
