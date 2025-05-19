@@ -32,6 +32,7 @@ let commands = loadCommands();
 let filter = "all";
 let timers = {};
 let search = "";
+let editIdx = null;
 
 // FILTRES & RECHERCHE
 function filterList(cmd) {
@@ -61,13 +62,15 @@ function formatDuration(sec) {
 function renderList() {
   let list = commands.filter(filterList);
   let html = "";
-  list.forEach(cmd => {
+  list.forEach((cmd, i) => {
     let liveDur = cmd.status === "done" ? cmd.durationSec
       : Math.floor(((cmd.endTime||Date.now())-(cmd.startTime||Date.now()))/1000);
-    html += `<div class="cmd-card" data-id="${cmd.id}" draggable="false">
+    let addedClass = (i === 0 && window.__justAdded) ? "added" : "";
+    html += `<div class="cmd-card ${addedClass}" data-id="${cmd.id}" draggable="false">
       <div class="cmd-header">
         <span class="cmd-handle" title="Déplacer">≡</span>
         <span class="cmd-title">${cmd.name}</span>
+        <span class="cmd-edit" title="Modifier">✎</span>
         <span class="cmd-status" data-status="${cmd.status}">${statusLabel(cmd.status)}</span>
       </div>
       <div class="cmd-meta">
@@ -91,7 +94,10 @@ function renderList() {
   });
   document.getElementById('cmd-list').innerHTML = html || "<div style='color:var(--text-muted);text-align:center;padding:2rem 0'>Aucune commande…</div>";
   updateTimers();
+  window.__justAdded = false;
 }
+
+// STATUS
 function statusLabel(st) {
   if (st === "wait") return "En attente";
   if (st === "pause") return "En pause";
@@ -116,23 +122,38 @@ function updateTimers() {
   }, 1000);
 }
 
-// ACTIONS CARTE (pause, done, delete)
+// ACTIONS CARTE (pause, done, delete, edit)
 document.getElementById('cmd-list').addEventListener('click', function(e) {
   let btn = e.target.closest('button[data-act]');
-  if (!btn) return;
-  let card = btn.closest('.cmd-card');
-  let id = card.getAttribute("data-id");
+  let card = e.target.closest('.cmd-card');
+  let id = card?.getAttribute("data-id");
   let idx = commands.findIndex(c=>c.id===id);
-  if (idx<0) return;
+
+  // Edition rapide (clic sur crayon)
+  if (e.target.classList.contains('cmd-edit')) {
+    let cmd = commands[idx];
+    // Pré-remplir le formulaire
+    Object.entries(cmd).forEach(([k,v])=>{
+      let input = formAdd.elements[k];
+      if(input) input.value = v;
+    });
+    formAdd.style.display = "block";
+    formAdd.scrollIntoView({behavior:"smooth",block:"center"});
+    editIdx = idx;
+    fab.style.display = "none";
+    formAdd.querySelector('[name="client"]').focus();
+    formAdd.querySelector('button[type="submit"]').textContent = "Enregistrer";
+    return;
+  }
+
+  if (!btn || idx < 0) return;
   let act = btn.getAttribute('data-act');
   if (act==="pause") {
-    if (commands[idx].status==="pause") {
-      commands[idx].status = "wait";
-    } else {
-      commands[idx].status = "pause";
-    }
+    commands[idx].status = (commands[idx].status==="pause") ? "wait" : "pause";
     saveCommands(commands);
     renderList();
+    btn.classList.add("acted");
+    setTimeout(()=>btn.classList.remove("acted"), 520);
   }
   else if (act==="done") {
     if (!commands[idx].endTime) {
@@ -142,6 +163,8 @@ document.getElementById('cmd-list').addEventListener('click', function(e) {
     commands[idx].status = "done";
     saveCommands(commands);
     renderList();
+    btn.classList.add("acted");
+    setTimeout(()=>btn.classList.remove("acted"), 520);
   }
   else if (act==="delete") {
     if (confirm("Supprimer cette commande ? Cette action est irréversible.")) {
@@ -155,22 +178,60 @@ document.getElementById('cmd-list').addEventListener('click', function(e) {
   }
 });
 
-// DRAG & DROP (déplacement)
+// SWIPE MOBILE (gauche = supprimer, droite = pause)
+let startX=0, startY=0, moved=false;
+document.getElementById('cmd-list').addEventListener('touchstart', function(e){
+  let card = e.target.closest('.cmd-card');
+  if (!card) return;
+  startX = e.touches[0].clientX; startY = e.touches[0].clientY; moved = false;
+  card.style.transition = "";
+}, {passive:true});
+document.getElementById('cmd-list').addEventListener('touchmove', function(e){
+  let card = e.target.closest('.cmd-card');
+  if (!card) return;
+  let dx = e.touches[0].clientX-startX;
+  if (Math.abs(dx)>10) moved=true;
+  if (moved) {
+    card.style.transform = `translateX(${dx}px)`;
+    card.style.opacity = 1-Math.abs(dx)/220;
+  }
+},{passive:true});
+document.getElementById('cmd-list').addEventListener('touchend', function(e){
+  let card = e.target.closest('.cmd-card');
+  if (!card) return;
+  let dx = e.changedTouches[0].clientX-startX;
+  card.style.transition = ".18s";
+  let id = card.getAttribute("data-id");
+  let idx = commands.findIndex(c=>c.id===id);
+
+  if (dx < -70) { // swipe gauche = supprimer
+    if (confirm("Supprimer cette commande ?")) {
+      card.classList.add("swipe-remove");
+      setTimeout(()=>{
+        commands.splice(idx,1);
+        saveCommands(commands);
+        renderList();
+      }, 200);
+    } else {
+      card.style.transform = ""; card.style.opacity = "";
+    }
+  } else if (dx > 70) { // swipe droite = pause/reprendre
+    commands[idx].status = (commands[idx].status==="pause") ? "wait" : "pause";
+    saveCommands(commands);
+    renderList();
+  } else {
+    card.style.transform = "";
+    card.style.opacity = "";
+  }
+});
+
+// DRAG & DROP + long press mobile (delay)
 new Sortable(document.getElementById('cmd-list'), {
   animation: 160,
   handle: ".cmd-handle",
-  onEnd: function (evt) {
-    let oldI = evt.oldIndex, newI = evt.newIndex;
-    if (oldI === newI) return;
-    let list = commands.filter(filterList);
-    let moving = list[oldI];
-    let globalOld = commands.findIndex(c=>c.id===moving.id);
-    commands.splice(globalOld,1);
-    let before = list[newI];
-    let globalNew = before ? commands.findIndex(c=>c.id===before.id) : commands.length;
-    commands.splice(globalNew,0,moving);
-    saveCommands(commands); renderList();
-  }
+  touchStartThreshold: 5,
+  delay: 120,
+  delayOnTouchOnly: true
 });
 
 // FILTRES
@@ -208,27 +269,49 @@ fab.onclick = (e)=>{
   e.stopPropagation();
   formAdd.style.display = (formAdd.style.display === "none" || !formAdd.style.display) ? "block" : "none";
   if (formAdd.style.display === "block") {
-    setTimeout(()=>formAdd.querySelector('[name="client"]').focus(),100);
+    setTimeout(()=>formAdd.querySelector('[name="client"]').focus(),120);
+    fab.style.display = "none";
+    editIdx = null;
+    formAdd.querySelector('button[type="submit"]').textContent = "Ajouter";
   }
 };
-
-// Ferme le formulaire si on clique hors du form (mobile & desktop)
+// Ferme le formulaire si on clique hors du form
 document.addEventListener("click", function(e){
   if (formAdd.style.display === "block" && !formAdd.contains(e.target) && e.target!==fab) {
     formAdd.style.display = "none";
+    fab.style.display = "flex";
+    editIdx = null;
+    formAdd.querySelector('button[type="submit"]').textContent = "Ajouter";
   }
 });
 // Gère l'appui sur echap
 document.addEventListener('keydown', function(e){
-  if (e.key === "Escape") formAdd.style.display = "none";
+  if (e.key === "Escape") {
+    formAdd.style.display = "none";
+    fab.style.display = "flex";
+    editIdx = null;
+    formAdd.querySelector('button[type="submit"]').textContent = "Ajouter";
+  }
 });
 
-// FORMULAIRE (ajout)
+// FORMULAIRE (ajout ou édition)
 formAdd.onsubmit = function(e) {
   e.preventDefault();
   let formData = Object.fromEntries(new FormData(formAdd));
-  commands.unshift(newCommand(formData));
-  saveCommands(commands);
+  if (editIdx !== null && typeof editIdx === "number") {
+    // édition
+    Object.assign(commands[editIdx], formData);
+    saveCommands(commands);
+    editIdx = null;
+    formAdd.querySelector('button[type="submit"]').textContent = "Ajouter";
+    fab.style.display = "flex";
+  } else {
+    // ajout
+    commands.unshift(newCommand(formData));
+    saveCommands(commands);
+    window.__justAdded = true;
+    fab.style.display = "flex";
+  }
   formAdd.reset();
   formAdd.style.display = "none";
   renderList();
@@ -291,8 +374,6 @@ function mailExport() {
     alert("Aucune commande terminée à envoyer.");
     return;
   }
-
-  // Mise en forme compacte pour l’email
   let lignes = [
     "Badges V-MACH terminés :\n",
     ...done.map(cmd =>
@@ -300,8 +381,6 @@ function mailExport() {
     )
   ];
   let mailBody = lignes.join("\n");
-
-  // Préparation du mail
   let subject = encodeURIComponent("Badges terminés - Synthèse V-MACH");
   let body = encodeURIComponent(mailBody);
   let mailto = `mailto:?subject=${subject}&body=${body}`;
