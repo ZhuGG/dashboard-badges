@@ -177,7 +177,6 @@ document.getElementById('cmd-list').addEventListener('click', function(e) {
     commands[idx].status = "done";
   }
   else if (act==="delete") {
-    // Animation avant suppression
     card.classList.add("swipe-remove");
     setTimeout(()=>{
       commands.splice(idx,1);
@@ -190,7 +189,7 @@ document.getElementById('cmd-list').addEventListener('click', function(e) {
   renderSynth(); renderList();
 });
 
-// DRAG & DROP (ne supprime rien, déplace seulement)
+// DRAG & DROP (déplacement)
 new Sortable(document.getElementById('cmd-list'), {
   animation: 160,
   handle: ".cmd-handle",
@@ -294,7 +293,6 @@ function exportData(type) {
   if (type==="csv") {
     let header = Object.keys(data[0]||{}).join(",");
     let rows = data.map(row=>Object.values(row).map(v=>typeof v==="string"?('"'+v.replace(/"/g,'""')+'"'):v).join(","));
-    // UTF-8 BOM pour Excel/accents :
     let csvContent = "\uFEFF" + header + "\n" + rows.join("\n");
     let blob = new Blob([csvContent], {type:"text/csv"});
     let a = document.createElement("a");
@@ -303,50 +301,33 @@ function exportData(type) {
     a.click();
   }
 }
-document.getElementById('export-csv').onclick = ()=>exportData("csv"); // ENVOI PAR MAIL des commandes terminées
+document.getElementById('export-csv').onclick = ()=>exportData("csv");
+
+// ENVOI PAR MAIL (compact, clair)
 function mailExport() {
-  // Récupérer les commandes terminées
+  // Commandes terminées
   let done = commands.filter(c => c.status === "done");
   if (!done.length) {
     alert("Aucune commande terminée à envoyer.");
     return;
   }
 
-  // Construire le corps du mail
+  // Mise en forme compacte pour l’email
   let lignes = [
-    "Voici les commandes de badges terminées :",
-    "",
-    "---------------------------------------",
-    ...done.map(cmd => [
-      `Nom badge  : ${cmd.name}`,
-      `Client     : ${cmd.client}`,
-      `Quantité   : ${cmd.qty}`,
-      `Format     : ${cmd.diam}`,
-      `Finition   : ${cmd.finish}`,
-      `Attache    : ${cmd.type}`,
-      `Carton     : ${cmd.carton}`,
-      `Créé le    : ${formatDate(cmd.startTime)}`,
-      `Terminé le : ${formatDate(cmd.endTime)}`,
-      `Durée      : ${formatDuration(cmd.durationSec)}`,
-      "---------------------------------------"
-    ].join("\n"))
+    "Badges V-MACH terminés :\n",
+    ...done.map(cmd =>
+      `• ${cmd.name} | Client : ${cmd.client} | Qté : ${cmd.qty} | Format : ${cmd.diam} | Finition : ${cmd.finish} | Attache : ${cmd.type} | Carton : ${cmd.carton} | Créé : ${formatDate(cmd.startTime)} | Terminé : ${formatDate(cmd.endTime)} | Durée : ${formatDuration(cmd.durationSec)}`
+    )
   ];
-
   let mailBody = lignes.join("\n");
 
-  // Encode tout pour l'URL (mailto)
+  // Préparation du mail
   let subject = encodeURIComponent("Badges terminés - Synthèse V-MACH");
   let body = encodeURIComponent(mailBody);
-
-  // Ici tu peux remplacer l'adresse si tu veux une valeur par défaut :
   let mailto = `mailto:?subject=${subject}&body=${body}`;
-
-  // Ouvre le logiciel mail
   window.open(mailto, "_blank");
 }
-
 document.getElementById('export-mail').onclick = mailExport;
-
 
 // STORAGE EVENTS (multi-onglet live sync)
 window.addEventListener("storage", ()=>{
