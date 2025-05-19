@@ -23,7 +23,9 @@ function newCommand(data) {
     status: "wait",
     startTime: Date.now(),
     endTime: null,
-    durationSec: 0
+    durationSec: 0,
+    pauseStart: null,
+    pausedTotal: 0
   }
 }
 
@@ -32,7 +34,6 @@ let commands = loadCommands();
 let filter = "all";
 let timers = {};
 let search = "";
-let editIdx = null;
 
 // FILTRES & RECHERCHE
 function filterList(cmd) {
@@ -49,6 +50,7 @@ function filterList(cmd) {
 
 // RENDER COMMANDES
 function formatDate(ts) {
+  if (!ts) return "—";
   let d = new Date(ts);
   return d.toLocaleDateString("fr-FR") + " " + d.toLocaleTimeString("fr-FR").slice(0,5);
 }
@@ -63,14 +65,20 @@ function renderList() {
   let list = commands.filter(filterList);
   let html = "";
   list.forEach((cmd, i) => {
-    let liveDur = cmd.status === "done" ? cmd.durationSec
-      : Math.floor(((cmd.endTime||Date.now())-(cmd.startTime||Date.now()))/1000);
-    let addedClass = (i === 0 && window.__justAdded) ? "added" : "";
-    html += `<div class="cmd-card ${addedClass}" data-id="${cmd.id}" draggable="false">
+    // gestion du timer: 
+    let liveDur;
+    if (cmd.status === "done") {
+      liveDur = cmd.durationSec;
+    } else if (cmd.status === "pause") {
+      liveDur = Math.floor(((cmd.pauseStart||Date.now())-(cmd.startTime||Date.now())-cmd.pausedTotal)/1000);
+    } else {
+      liveDur = Math.floor(((Date.now())-(cmd.startTime||Date.now())-cmd.pausedTotal)/1000);
+    }
+
+    html += `<div class="cmd-card" data-id="${cmd.id}" draggable="false">
       <div class="cmd-header">
         <span class="cmd-handle" title="Déplacer">≡</span>
         <span class="cmd-title">${cmd.name}</span>
-        <span class="cmd-edit" title="Modifier">✎</span>
         <span class="cmd-status" data-status="${cmd.status}">${statusLabel(cmd.status)}</span>
       </div>
       <div class="cmd-meta">
@@ -94,7 +102,6 @@ function renderList() {
   });
   document.getElementById('cmd-list').innerHTML = html || "<div style='color:var(--text-muted);text-align:center;padding:2rem 0'>Aucune commande…</div>";
   updateTimers();
-  window.__justAdded = false;
 }
 
 // STATUS
@@ -105,7 +112,7 @@ function statusLabel(st) {
   return st;
 }
 
-// TIMER LIVE
+// TIMER LIVE (prend en compte la pause)
 function updateTimers() {
   clearInterval(timers.list);
   timers.list = setInterval(() => {
@@ -115,57 +122,56 @@ function updateTimers() {
       if (!cmd) return;
       let span = card.querySelector('.cmd-timer b');
       if (span && cmd.status !== "done") {
-        let dur = Math.floor(((cmd.endTime||Date.now())-(cmd.startTime||Date.now()))/1000);
-        span.textContent = formatDuration(dur);
+        let liveDur;
+        if (cmd.status === "pause") {
+          liveDur = Math.floor(((cmd.pauseStart||Date.now())-(cmd.startTime||Date.now())-cmd.pausedTotal)/1000);
+        } else {
+          liveDur = Math.floor(((Date.now())-(cmd.startTime||Date.now())-cmd.pausedTotal)/1000);
+        }
+        span.textContent = formatDuration(liveDur);
       }
     });
   }, 1000);
 }
 
-// ACTIONS CARTE (pause, done, delete, edit)
+// ACTIONS CARTE (pause, done, delete)
 document.getElementById('cmd-list').addEventListener('click', function(e) {
   let btn = e.target.closest('button[data-act]');
   let card = e.target.closest('.cmd-card');
   let id = card?.getAttribute("data-id");
   let idx = commands.findIndex(c=>c.id===id);
-
-  // --- ÉDITION RAPIDE (crayon) ---
-  if (e.target.classList.contains('cmd-edit')) {
-    let cmd = commands[idx];
-    // Pré-remplir les champs du formulaire (même select !)
-    formAdd.style.display = "block";
-    fab.style.display = "none";
-    editIdx = idx;
-    Object.entries(cmd).forEach(([k, v]) => {
-      let input = formAdd.elements[k];
-      if(input) {
-        input.value = v;
+  if (!btn || idx < 0) return;
+  let act = btn.getAttribute('data-act');
+  let cmd = commands[idx];
+  if (act==="pause") {
+    if (cmd.status === "pause") {
+      // REPRENDRE : accumule le temps de pause
+      if (cmd.pauseStart) {
+        cmd.pausedTotal += (Date.now() - cmd.pauseStart);
       }
-    });
-    // Pour faire apparaître la datalist correctement (safari)
-    formAdd.elements['client'].dispatchEvent(new Event("input"));
-    formAdd.scrollIntoView({behavior:"smooth",block:"center"});
-    formAdd.querySelector('button[type="submit"]').textContent = "Enregistrer";
-    setTimeout(()=>formAdd.querySelector('[name="client"]').focus(), 100);
-    return;
-  }
-
-  // --- RESTE INCHANGÉ ---
-  if (!btn || idx < 0) return;
-  let act = btn.getAttribute('data-act');
-  if (act==="pause") {
-    commands[idx].status = (commands[idx].status==="pause") ? "wait" : "pause";
+      cmd.pauseStart = null;
+      cmd.status = "wait";
+    } else if (cmd.status === "wait") {
+      // METTRE EN PAUSE
+      cmd.pauseStart = Date.now();
+      cmd.status = "pause";
+    }
     saveCommands(commands);
     renderList();
     btn.classList.add("acted");
     setTimeout(()=>btn.classList.remove("acted"), 520);
   }
   else if (act==="done") {
-    if (!commands[idx].endTime) {
-      commands[idx].endTime = Date.now();
-      commands[idx].durationSec = Math.floor((commands[idx].endTime-commands[idx].startTime)/1000);
+    if (!cmd.endTime) {
+      if (cmd.status === "pause" && cmd.pauseStart) {
+        // on stoppe le temps au moment où c'est terminé en pause
+        cmd.pausedTotal += (Date.now() - cmd.pauseStart);
+        cmd.pauseStart = null;
+      }
+      cmd.endTime = Date.now();
+      cmd.durationSec = Math.floor((cmd.endTime-cmd.startTime-cmd.pausedTotal)/1000);
     }
-    commands[idx].status = "done";
+    cmd.status = "done";
     saveCommands(commands);
     renderList();
     btn.classList.add("acted");
@@ -183,57 +189,7 @@ document.getElementById('cmd-list').addEventListener('click', function(e) {
   }
 });
 
-
-  // Edition rapide (clic sur crayon)
-  if (e.target.classList.contains('cmd-edit')) {
-    let cmd = commands[idx];
-    // Pré-remplir le formulaire
-    Object.entries(cmd).forEach(([k,v])=>{
-      let input = formAdd.elements[k];
-      if(input) input.value = v;
-    });
-    formAdd.style.display = "block";
-    formAdd.scrollIntoView({behavior:"smooth",block:"center"});
-    editIdx = idx;
-    fab.style.display = "none";
-    formAdd.querySelector('[name="client"]').focus();
-    formAdd.querySelector('button[type="submit"]').textContent = "Enregistrer";
-    return;
-  }
-
-  if (!btn || idx < 0) return;
-  let act = btn.getAttribute('data-act');
-  if (act==="pause") {
-    commands[idx].status = (commands[idx].status==="pause") ? "wait" : "pause";
-    saveCommands(commands);
-    renderList();
-    btn.classList.add("acted");
-    setTimeout(()=>btn.classList.remove("acted"), 520);
-  }
-  else if (act==="done") {
-    if (!commands[idx].endTime) {
-      commands[idx].endTime = Date.now();
-      commands[idx].durationSec = Math.floor((commands[idx].endTime-commands[idx].startTime)/1000);
-    }
-    commands[idx].status = "done";
-    saveCommands(commands);
-    renderList();
-    btn.classList.add("acted");
-    setTimeout(()=>btn.classList.remove("acted"), 520);
-  }
-  else if (act==="delete") {
-    if (confirm("Supprimer cette commande ? Cette action est irréversible.")) {
-      card.classList.add("swipe-remove");
-      setTimeout(()=>{
-        commands.splice(idx,1);
-        saveCommands(commands);
-        renderList();
-      },220);
-    }
-  }
-});
-
-// SWIPE MOBILE (gauche = supprimer, droite = pause)
+// SWIPE MOBILE (gauche = supprimer, droite = pause/reprendre)
 let startX=0, startY=0, moved=false;
 document.getElementById('cmd-list').addEventListener('touchstart', function(e){
   let card = e.target.closest('.cmd-card');
@@ -258,6 +214,7 @@ document.getElementById('cmd-list').addEventListener('touchend', function(e){
   card.style.transition = ".18s";
   let id = card.getAttribute("data-id");
   let idx = commands.findIndex(c=>c.id===id);
+  let cmd = commands[idx];
 
   if (dx < -70) { // swipe gauche = supprimer
     if (confirm("Supprimer cette commande ?")) {
@@ -271,7 +228,16 @@ document.getElementById('cmd-list').addEventListener('touchend', function(e){
       card.style.transform = ""; card.style.opacity = "";
     }
   } else if (dx > 70) { // swipe droite = pause/reprendre
-    commands[idx].status = (commands[idx].status==="pause") ? "wait" : "pause";
+    if (cmd.status === "pause") {
+      if (cmd.pauseStart) {
+        cmd.pausedTotal += (Date.now() - cmd.pauseStart);
+      }
+      cmd.pauseStart = null;
+      cmd.status = "wait";
+    } else if (cmd.status === "wait") {
+      cmd.pauseStart = Date.now();
+      cmd.status = "pause";
+    }
     saveCommands(commands);
     renderList();
   } else {
@@ -326,8 +292,6 @@ fab.onclick = (e)=>{
   if (formAdd.style.display === "block") {
     setTimeout(()=>formAdd.querySelector('[name="client"]').focus(),120);
     fab.style.display = "none";
-    editIdx = null;
-    formAdd.querySelector('button[type="submit"]').textContent = "Ajouter";
   }
 };
 // Ferme le formulaire si on clique hors du form
@@ -335,8 +299,6 @@ document.addEventListener("click", function(e){
   if (formAdd.style.display === "block" && !formAdd.contains(e.target) && e.target!==fab) {
     formAdd.style.display = "none";
     fab.style.display = "flex";
-    editIdx = null;
-    formAdd.querySelector('button[type="submit"]').textContent = "Ajouter";
   }
 });
 // Gère l'appui sur echap
@@ -344,29 +306,16 @@ document.addEventListener('keydown', function(e){
   if (e.key === "Escape") {
     formAdd.style.display = "none";
     fab.style.display = "flex";
-    editIdx = null;
-    formAdd.querySelector('button[type="submit"]').textContent = "Ajouter";
   }
 });
 
-// FORMULAIRE (ajout ou édition)
+// FORMULAIRE (ajout)
 formAdd.onsubmit = function(e) {
   e.preventDefault();
   let formData = Object.fromEntries(new FormData(formAdd));
-  if (editIdx !== null && typeof editIdx === "number") {
-    // édition
-    Object.assign(commands[editIdx], formData);
-    saveCommands(commands);
-    editIdx = null;
-    formAdd.querySelector('button[type="submit"]').textContent = "Ajouter";
-    fab.style.display = "flex";
-  } else {
-    // ajout
-    commands.unshift(newCommand(formData));
-    saveCommands(commands);
-    window.__justAdded = true;
-    fab.style.display = "flex";
-  }
+  commands.unshift(newCommand(formData));
+  saveCommands(commands);
+  fab.style.display = "flex";
   formAdd.reset();
   formAdd.style.display = "none";
   renderList();
@@ -405,7 +354,7 @@ document.body.addEventListener('click', function(e){
 // EXPORT CSV compatible accents
 function exportData(type) {
   let data = commands.map(c=>{
-    let {id,...obj} = c;
+    let {id, pauseStart, ...obj} = c;
     return obj;
   });
   if (type==="csv") {
