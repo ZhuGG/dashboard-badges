@@ -13,13 +13,13 @@ function saveCommands(list) {
 function newCommand(data) {
   return {
     id: Date.now() + "" + Math.floor(Math.random()*9999),
+    client: data.client.trim(),
     name: data.name.trim(),
     qty: Number(data.qty),
     diam: data.diam,
     finish: data.finish,
     type: data.type,
     carton: data.carton,
-    client: data.client ? data.client.trim() : "",
     status: "wait",
     startTime: Date.now(),
     endTime: null,
@@ -101,19 +101,19 @@ function renderList() {
   list.forEach(cmd => {
     let liveDur = cmd.status === "done" ? cmd.durationSec
       : Math.floor(((cmd.endTime||Date.now())-(cmd.startTime||Date.now()))/1000);
-    html += `<div class="cmd-card" data-id="${cmd.id}" draggable="false" ontouchstart="">
+    html += `<div class="cmd-card" data-id="${cmd.id}" draggable="false">
       <div class="cmd-header">
         <span class="cmd-handle" title="Déplacer">≡</span>
         <span class="cmd-title">${cmd.name}</span>
         <span class="cmd-status" data-status="${cmd.status}">${statusLabel(cmd.status)}</span>
       </div>
       <div class="cmd-meta">
+        <span>Client : <b>${cmd.client}</b></span>
         <span>Qté : <b>${cmd.qty}</b></span>
         <span>${cmd.diam}</span>
         <span>${cmd.finish}</span>
         <span>${cmd.type}</span>
         <span>${cmd.carton}</span>
-        ${cmd.client?`<span>Client : <b>${cmd.client}</b></span>`:""}
       </div>
       <div class="cmd-meta">
         <span>Créé : ${formatDate(cmd.startTime)}</span>
@@ -153,7 +153,7 @@ function updateTimers() {
   }, 1000);
 }
 
-// ACTIONS CARTE
+// ACTIONS CARTE (pause, done, delete)
 document.getElementById('cmd-list').addEventListener('click', function(e) {
   let btn = e.target.closest('button[data-act]');
   if (!btn) return;
@@ -190,44 +190,7 @@ document.getElementById('cmd-list').addEventListener('click', function(e) {
   renderSynth(); renderList();
 });
 
-// SWIPE MOBILE (suppr)
-let startX=0, startY=0, moved=false;
-document.getElementById('cmd-list').addEventListener('touchstart', function(e){
-  let card = e.target.closest('.cmd-card');
-  if (!card) return;
-  startX = e.touches[0].clientX; startY = e.touches[0].clientY; moved = false;
-  card.style.transition = "";
-}, {passive:true});
-document.getElementById('cmd-list').addEventListener('touchmove', function(e){
-  let card = e.target.closest('.cmd-card');
-  if (!card) return;
-  let dx = e.touches[0].clientX-startX;
-  if (Math.abs(dx)>10) moved=true;
-  if (moved) {
-    card.style.transform = `translateX(${dx}px)`;
-    card.style.opacity = 1-Math.abs(dx)/160;
-  }
-},{passive:true});
-document.getElementById('cmd-list').addEventListener('touchend', function(e){
-  let card = e.target.closest('.cmd-card');
-  if (!card) return;
-  let dx = e.changedTouches[0].clientX-startX;
-  card.style.transition = ".18s";
-  if (dx < -70) { // swipe left = suppr
-    card.classList.add("swipe-remove");
-    let id = card.getAttribute("data-id");
-    setTimeout(()=>{
-      commands = commands.filter(c=>c.id!==id);
-      saveCommands(commands);
-      renderSynth(); renderList();
-    }, 220);
-  } else {
-    card.style.transform = "";
-    card.style.opacity = "";
-  }
-});
-
-// DRAG & DROP
+// DRAG & DROP (ne supprime rien, déplace seulement)
 new Sortable(document.getElementById('cmd-list'), {
   animation: 160,
   handle: ".cmd-handle",
@@ -238,7 +201,6 @@ new Sortable(document.getElementById('cmd-list'), {
     let moving = list[oldI];
     let globalOld = commands.findIndex(c=>c.id===moving.id);
     commands.splice(globalOld,1);
-    // calculer où insérer (par rapport à la filteredList)
     let before = list[newI];
     let globalNew = before ? commands.findIndex(c=>c.id===before.id) : commands.length;
     commands.splice(globalNew,0,moving);
@@ -279,7 +241,7 @@ let fab = document.getElementById('fab');
 let formAdd = document.getElementById('form-add');
 fab.onclick = ()=>{
   formAdd.style.display = (formAdd.style.display === "none" || !formAdd.style.display) ? "block" : "none";
-  if (formAdd.style.display === "block") formAdd.querySelector('[name="name"]').focus();
+  if (formAdd.style.display === "block") formAdd.querySelector('[name="client"]').focus();
 };
 
 // FORMULAIRE
@@ -323,7 +285,7 @@ document.body.addEventListener('click', function(e){
     autocompleteList.style.display="none";
 }, true);
 
-// EXPORT CSV/JSON
+// EXPORT CSV compatible accents
 function exportData(type) {
   let data = commands.map(c=>{
     let {id,...obj} = c;
@@ -332,21 +294,16 @@ function exportData(type) {
   if (type==="csv") {
     let header = Object.keys(data[0]||{}).join(",");
     let rows = data.map(row=>Object.values(row).map(v=>typeof v==="string"?('"'+v.replace(/"/g,'""')+'"'):v).join(","));
-    let blob = new Blob([header+"\n"+rows.join("\n")], {type:"text/csv"});
+    // UTF-8 BOM pour Excel/accents :
+    let csvContent = "\uFEFF" + header + "\n" + rows.join("\n");
+    let blob = new Blob([csvContent], {type:"text/csv"});
     let a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "badges_vmach.csv";
     a.click();
-  } else if (type==="json") {
-    let blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
-    let a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "badges_vmach.json";
-    a.click();
   }
 }
 document.getElementById('export-csv').onclick = ()=>exportData("csv");
-document.getElementById('export-json').onclick = ()=>exportData("json");
 
 // STORAGE EVENTS (multi-onglet live sync)
 window.addEventListener("storage", ()=>{
