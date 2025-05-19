@@ -4,7 +4,7 @@
   --primary: #5ae7e2;
   --primary-accent: #a49dff;
   --secondary: #34b4fa;
-  --card: rgba(34,40,58,0.72);
+  --card: rgba(34,40,58,0.63);
   --card-solid: #22283a;
   --text: #e4e8ef;
   --text-muted: #91a1bb;
@@ -23,7 +23,7 @@
   --primary: #1e7a9d;
   --primary-accent: #937dff;
   --secondary: #2693c6;
-  --card: rgba(255,255,255,0.76);
+  --card: rgba(255,255,255,0.77);
   --card-solid: #fff;
   --text: #23294b;
   --text-muted: #6e84a3;
@@ -233,7 +233,8 @@ main {
   padding-bottom: 4rem;
 }
 .cmd-card {
-  background: rgba(34,40,58,0.68); /* transparence ! */
+  background: var(--card);
+  margin-bottom: 1.1rem;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 1rem 1rem 0.7rem 1rem;
@@ -243,13 +244,11 @@ main {
   min-height: var(--min-touch);
   position: relative;
   animation: fadein .36s;
-  /* EFFET GLASSMORPHISM : */
-  backdrop-filter: blur(8px) saturate(1.25);
+  /* GLASSMORPHISM */
+  backdrop-filter: blur(8px) saturate(1.23);
   border: 1.2px solid rgba(255,255,255,0.17);
-  /* Optionnel : contour lumineux doux */
   box-shadow: 0 8px 38px 0 #0006, 0 1.5px 24px 0 var(--primary-accent);
 }
-
 @keyframes fadein { from { opacity: 0; transform: translateY(22px);} to { opacity: 1; transform: none; } }
 .cmd-card.added {
   animation: cardAddedPulse .52s cubic-bezier(.67,0,.28,1);
@@ -345,16 +344,6 @@ main {
   touch-action: none;
   opacity: 0.75;
 }
-.cmd-edit {
-  font-size: 1.15rem;
-  cursor: pointer;
-  color: var(--primary-accent);
-  margin-left: .35rem;
-  opacity: 0.67;
-  transition: color .14s, opacity .14s;
-  vertical-align: middle;
-}
-.cmd-edit:hover { color: var(--primary); opacity: 1; }
 
 .fab {
   position: fixed;
