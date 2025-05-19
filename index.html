@@ -23,6 +23,14 @@
     <input type="search" id="search" class="search-bar" placeholder="Recherche badge, client, type…" autocomplete="off" />
 
     <form id="form-add" autocomplete="off" style="display:none;">
+      <input name="client" list="client-list" required placeholder="Client *" />
+      <datalist id="client-list">
+        <option>TU</option>
+        <option>Cléacom</option>
+        <option>Ope5</option>
+        <option>Fullfiler</option>
+        <option>MCOM</option>
+      </datalist>
       <input name="name" id="name" required placeholder="Nom badge *" autocomplete="off" />
       <div class="autocomplete-list" id="autocomplete-list" style="display:none;"></div>
       <input name="qty" type="number" min="1" required placeholder="Quantité *" autocomplete="off" />
@@ -52,14 +60,6 @@
         <option>Boîte A12</option>
         <option>Boîte A14</option>
       </select>
-      <input name="client" list="client-list" placeholder="Client (optionnel)" />
-      <datalist id="client-list">
-        <option>TU</option>
-        <option>Cléacom</option>
-        <option>Ope5</option>
-        <option>Fullfiler</option>
-        <option>MCOM</option>
-      </datalist>
       <button type="submit">Ajouter</button>
     </form>
 
@@ -67,7 +67,6 @@
 
     <div class="export-btn">
       <button id="export-csv">Export CSV</button>
-      <button id="export-json">Export JSON</button>
     </div>
   </main>
   <button class="fab" id="fab">＋</button>
