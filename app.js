@@ -33,43 +33,6 @@ let filter = "all";
 let timers = {};
 let search = "";
 
-// SYNTHÈSE
-function computeStats(list) {
-  let now = new Date();
-  let startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  let startOfWeek = startOfToday - ((now.getDay() + 6) % 7) * 864e5;
-  let startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-  let today = 0, week = 0, month = 0, total = list.length;
-  list.forEach(cmd => {
-    if (cmd.endTime) {
-      if (cmd.endTime >= startOfToday) today += cmd.qty;
-      if (cmd.endTime >= startOfWeek) week += cmd.qty;
-      if (cmd.endTime >= startOfMonth) month += cmd.qty;
-    }
-  });
-  return { today, week, month, total };
-}
-function renderSynth() {
-  let stats = computeStats(commands);
-  document.getElementById('synth').innerHTML = `
-    <div>
-      <span class="val">${stats.today}</span>
-      <span>Badges aujourd'hui</span>
-    </div>
-    <div>
-      <span class="val">${stats.week}</span>
-      <span>Semaine</span>
-    </div>
-    <div>
-      <span class="val">${stats.month}</span>
-      <span>Mois</span>
-    </div>
-    <div>
-      <span class="val">${stats.total}</span>
-      <span>Total commandes</span>
-    </div>`;
-}
-
 // FILTRES & RECHERCHE
 function filterList(cmd) {
   if (filter !== "all" && cmd.status !== filter) return false;
@@ -181,12 +144,12 @@ document.getElementById('cmd-list').addEventListener('click', function(e) {
     setTimeout(()=>{
       commands.splice(idx,1);
       saveCommands(commands);
-      renderSynth(); renderList();
+      renderList();
     },220);
     return;
   }
   saveCommands(commands);
-  renderSynth(); renderList();
+  renderList();
 });
 
 // DRAG & DROP (déplacement)
@@ -208,134 +171,4 @@ new Sortable(document.getElementById('cmd-list'), {
 });
 
 // FILTRES
-document.querySelectorAll('.filters button[data-filter]').forEach(btn=>{
-  btn.onclick = ()=>{
-    document.querySelectorAll('.filters button').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    filter = btn.getAttribute('data-filter');
-    renderList();
-  }
-});
-
-// THEME
-function setTheme(theme) {
-  document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem("theme", theme);
-  document.querySelector('.theme-toggle').textContent = theme==="light" ? "☀️" : "🌙";
-}
-let userTheme = localStorage.getItem("theme") || "dark";
-setTheme(userTheme);
-document.querySelector('.theme-toggle').onclick = ()=>{
-  setTheme(document.documentElement.getAttribute('data-theme')==="dark" ? "light":"dark");
-};
-
-// SEARCH
-document.getElementById('search').oninput = function(e) {
-  search = this.value.trim();
-  renderList();
-};
-
-// FAB & FORM
-let fab = document.getElementById('fab');
-let formAdd = document.getElementById('form-add');
-fab.onclick = ()=>{
-  formAdd.style.display = (formAdd.style.display === "none" || !formAdd.style.display) ? "block" : "none";
-  if (formAdd.style.display === "block") formAdd.querySelector('[name="client"]').focus();
-};
-
-// FORMULAIRE
-formAdd.onsubmit = function(e) {
-  e.preventDefault();
-  let formData = Object.fromEntries(new FormData(formAdd));
-  commands.unshift(newCommand(formData));
-  saveCommands(commands);
-  formAdd.reset();
-  formAdd.style.display = "none";
-  renderSynth(); renderList();
-  refreshAutocomplete();
-};
-
-// AUTOCOMPLETE NOM BADGE
-let autocompleteList = document.getElementById('autocomplete-list');
-function getHistoryNames() {
-  let set = new Set();
-  commands.forEach(c=>set.add(c.name));
-  return Array.from(set).sort();
-}
-function refreshAutocomplete() {
-  autocompleteList.style.display = "none";
-}
-document.getElementById('name').oninput = function(e) {
-  let val = this.value;
-  if (!val) { autocompleteList.style.display="none"; return; }
-  let suggs = getHistoryNames().filter(n=>n.toLowerCase().includes(val.toLowerCase()) && n.toLowerCase()!==val.toLowerCase());
-  if (!suggs.length) { autocompleteList.style.display="none"; return;}
-  autocompleteList.innerHTML = suggs.slice(0,5).map(s=>`<div class="autocomplete-item">${s}</div>`).join('');
-  autocompleteList.style.display="block";
-};
-autocompleteList.onclick = function(e) {
-  if (e.target.classList.contains("autocomplete-item")) {
-    document.getElementById('name').value = e.target.textContent;
-    autocompleteList.style.display="none";
-  }
-};
-document.body.addEventListener('click', function(e){
-  if (!autocompleteList.contains(e.target) && e.target.id!=="name")
-    autocompleteList.style.display="none";
-}, true);
-
-// EXPORT CSV compatible accents
-function exportData(type) {
-  let data = commands.map(c=>{
-    let {id,...obj} = c;
-    return obj;
-  });
-  if (type==="csv") {
-    let header = Object.keys(data[0]||{}).join(",");
-    let rows = data.map(row=>Object.values(row).map(v=>typeof v==="string"?('"'+v.replace(/"/g,'""')+'"'):v).join(","));
-    let csvContent = "\uFEFF" + header + "\n" + rows.join("\n");
-    let blob = new Blob([csvContent], {type:"text/csv"});
-    let a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "badges_vmach.csv";
-    a.click();
-  }
-}
-document.getElementById('export-csv').onclick = ()=>exportData("csv");
-
-// ENVOI PAR MAIL (compact, clair)
-function mailExport() {
-  // Commandes terminées
-  let done = commands.filter(c => c.status === "done");
-  if (!done.length) {
-    alert("Aucune commande terminée à envoyer.");
-    return;
-  }
-
-  // Mise en forme compacte pour l’email
-  let lignes = [
-    "Badges V-MACH terminés :\n",
-    ...done.map(cmd =>
-      `• ${cmd.name} | Client : ${cmd.client} | Qté : ${cmd.qty} | Format : ${cmd.diam} | Finition : ${cmd.finish} | Attache : ${cmd.type} | Carton : ${cmd.carton} | Créé : ${formatDate(cmd.startTime)} | Terminé : ${formatDate(cmd.endTime)} | Durée : ${formatDuration(cmd.durationSec)}`
-    )
-  ];
-  let mailBody = lignes.join("\n");
-
-  // Préparation du mail
-  let subject = encodeURIComponent("Badges terminés - Synthèse V-MACH");
-  let body = encodeURIComponent(mailBody);
-  let mailto = `mailto:?subject=${subject}&body=${body}`;
-  window.open(mailto, "_blank");
-}
-document.getElementById('export-mail').onclick = mailExport;
-
-// STORAGE EVENTS (multi-onglet live sync)
-window.addEventListener("storage", ()=>{
-  commands = loadCommands();
-  renderSynth(); renderList(); refreshAutocomplete();
-});
-
-// INIT
-renderSynth();
-renderList();
-refreshAutocomplete();
+document.querySelectorAll('.filters button[data-filter]').forEach(btn
