@@ -1,149 +1,329 @@
-/* Global */
-* {
-  box-sizing: border-box;
+:root {
+  --bg: #181f25;
+  --bg2: #212a34;
+  --primary: #4e9aff;
+  --primary-accent: #44d7b6;
+  --text: #e6ebef;
+  --text-muted: #a5b3be;
+  --border: #28303a;
+  --card: #232c34;
+  --danger: #ff5470;
+  --success: #44d7b6;
+  --pause: #ffd166;
+  --shadow: 0 6px 16px 0 #0004;
+  --radius: 1.5rem;
+  --min-touch: 48px;
 }
-body, html {
-  margin: 0;
-  padding: 0;
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(135deg, #f0f2f5, #d9e2ec);
-  color: #333;
+[data-theme="light"] {
+  --bg: #f7fafd;
+  --bg2: #e9eef2;
+  --primary: #365bb8;
+  --primary-accent: #2aa678;
+  --text: #172028;
+  --text-muted: #789;
+  --border: #cfd8de;
+  --card: #fff;
+  --danger: #c0392b;
+  --success: #2aa678;
+  --pause: #ffd166;
+  --shadow: 0 4px 16px 0 #0001;
 }
-
-/* Header */
-header {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: #fff;
-  padding: 2rem 1rem;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
+html, body {
+  margin: 0; padding: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+  font-size: 16px;
 }
-header h1 {
-  margin: 0;
-  font-size: 2rem;
-}
-header p {
-  margin: 0.5rem 0 0;
-  font-size: 1rem;
-}
-
-/* Navigation */
-nav {
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(5px);
-}
-nav ul {
-  list-style: none;
-  margin: 0;
-  padding: 0.5rem;
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-nav ul li {
-  margin: 0.5rem 1rem;
-}
-nav ul li a {
-  color: #fff;
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s;
-}
-nav ul li a:hover {
-  color: #ffdd57;
-}
-
-/* Main */
 main {
-  padding: 2rem;
-  max-width: 1200px;
+  max-width: 420px;
   margin: 0 auto;
+  padding-bottom: 120px;
 }
-section {
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+h1 {
+  font-size: 1.5rem;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 1.5px;
+  margin: 1.2rem 0 0.2rem 1rem;
+  color: var(--primary);
+  font-weight: 700;
 }
-section:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+.synth {
+  display: flex; flex-wrap: wrap; gap: 1rem;
+  padding: 1rem 0.5rem 0.5rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
 }
-h2, h3 {
-  color: #444;
-  margin-bottom: 1rem;
+.synth > div {
+  flex: 1 0 42%;
+  background: var(--card);
+  border-radius: 1.1rem;
+  min-width: 120px;
+  margin-bottom: .5rem;
+  box-shadow: var(--shadow);
+  padding: .7rem .5rem .5rem .9rem;
+  text-align: left;
+  font-size: .98rem;
 }
-.form-group {
-  margin-bottom: 1rem;
-}
-label {
+.synth .val {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--primary-accent);
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: #555;
+  margin-bottom: 0.1rem;
 }
-input[type="text"],
-input[type="number"],
-input[type="time"],
-select {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+.filters {
+  display: flex;
+  gap: 0.3rem;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem 0.5rem 0.5rem 0.5rem;
+}
+.filters button, .theme-toggle {
+  font: inherit;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 1.2rem;
+  background: var(--card);
+  color: var(--text);
+  min-width: 64px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: background 0.15s;
   outline: none;
-  transition: border-color 0.3s;
 }
-input[type="text"]:focus,
-input[type="number"]:focus,
-input[type="time"]:focus,
-select:focus {
-  border-color: #667eea;
+.filters button.active {
+  background: var(--primary);
+  color: #fff;
 }
-input[type="radio"] {
-  margin-right: 0.5rem;
+.theme-toggle {
+  background: none;
+  font-size: 1.2rem;
+  padding: 0.2rem 0.4rem;
 }
-button {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+.search-bar {
+  width: 96%;
+  margin: 0.7rem 2%;
+  background: var(--card);
+  border-radius: 1.3rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  font-size: 1rem;
+  padding: 0.8rem 1.2rem;
+  color: var(--text);
+}
+#form-add {
+  margin: 0.7rem 2%;
+  background: var(--card);
+  padding: 1.1rem 0.7rem 0.6rem 0.7rem;
+  border-radius: 1.2rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  font-size: 1rem;
+  position: relative;
+  z-index: 10;
+}
+#form-add input, #form-add select {
+  font: inherit;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--bg2);
+  color: var(--text);
+  padding: 0.7rem 1rem;
+  outline: none;
+  min-height: var(--min-touch);
+  transition: border 0.15s;
+}
+#form-add input:focus, #form-add select:focus {
+  border-color: var(--primary-accent);
+}
+#form-add button {
+  background: var(--primary);
   color: #fff;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
+  border-radius: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  min-height: var(--min-touch);
+  box-shadow: var(--shadow);
   cursor: pointer;
-  font-size: 1rem;
-  transition: background 0.3s, transform 0.2s;
-}
-button:hover {
-  background: linear-gradient(135deg, #5a67d8, #6b46c1);
-  transform: scale(1.02);
-}
-.table-container {
-  overflow-x: auto;
-}
-table {
+  transition: background 0.15s;
+  margin-top: .5rem;
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-  table-layout: fixed;
+  padding: 0.7rem;
+  letter-spacing: 0.03em;
 }
-th, td {
-  padding: 0.75rem;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+#cmd-list {
+  margin: 1rem 0.5rem 0 0.5rem;
+  padding-bottom: 4rem;
+}
+.cmd-card {
+  background: var(--card);
+  margin-bottom: 1.1rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1rem 1rem 0.7rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-height: var(--min-touch);
+  position: relative;
+  animation: fadein .36s;
+}
+@keyframes fadein { from { opacity: 0; transform: translateY(20px);} to { opacity: 1; transform: none; } }
+.cmd-header {
+  display: flex; align-items: center; gap: 0.7rem; justify-content: space-between;
+}
+.cmd-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: var(--primary);
+  flex: 1;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.cmd-meta {
+  font-size: 0.97rem;
+  color: var(--text-muted);
+  display: flex; gap: 0.8rem; flex-wrap: wrap;
+}
+.cmd-status {
+  padding: 0.18rem 0.8rem;
+  border-radius: 0.8rem;
+  font-weight: 600;
+  font-size: 0.97rem;
+  background: var(--bg2);
+  color: var(--text);
+  margin-left: .6rem;
+  min-width: 88px;
   text-align: center;
-  word-wrap: break-word;
+  box-shadow: 0 1px 2px #0002;
 }
-th {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+.cmd-status[data-status="pause"] {
+  background: var(--pause);
+  color: #a46d00;
+}
+.cmd-status[data-status="done"] {
+  background: var(--success);
+  color: #044d3d;
+}
+.cmd-timer {
+  font-size: 0.97rem;
+  color: var(--primary-accent);
+  font-weight: 600;
+  margin-left: 0.2rem;
+}
+.cmd-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+  flex-wrap: wrap;
+}
+.cmd-actions button {
+  flex: 1 1 100px;
+  min-width: 0;
+  font: inherit;
+  background: var(--bg2);
+  color: var(--text);
+  border: none;
+  border-radius: 1rem;
+  min-height: var(--min-touch);
+  font-weight: 600;
+  box-shadow: 0 2px 6px #0001;
+  cursor: pointer;
+  transition: background 0.12s;
+  padding: 0.5rem 0.3rem;
+  font-size: 1rem;
+  word-break: break-word;
+}
+.cmd-actions button[data-act="pause"] { background: var(--pause); color: #a46d00; }
+.cmd-actions button[data-act="done"] { background: var(--success); color: #044d3d;}
+.cmd-actions button[data-act="delete"] { background: var(--danger);}
+.cmd-actions button:active { filter: brightness(.97);}
+.cmd-handle {
+  cursor: grab;
+  font-size: 1.4rem;
+  color: var(--text-muted);
+  padding-right: 0.2rem;
+  user-select: none;
+  touch-action: none;
+}
+.fab {
+  position: fixed;
+  right: 1.3rem; bottom: 1.3rem;
+  z-index: 100;
+  width: 64px; height: 64px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 2.2rem;
+  display: flex;
+  align-items: center; justify-content: center;
+  box-shadow: 0 8px 24px #0005;
+  cursor: pointer;
+  border: none;
+  transition: background 0.18s, box-shadow 0.18s;
+}
+.fab:active { background: var(--primary-accent); }
+.export-btn {
+  display: flex;
+  justify-content: center;
+  margin: 0.7rem 0 1.3rem 0;
+}
+.export-btn button {
+  background: var(--primary-accent);
+  color: #fff;
+  font: inherit;
+  font-size: 1rem;
+  border: none;
+  border-radius: 1.1rem;
+  min-width: 132px;
+  min-height: var(--min-touch);
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  margin: 0 0.4rem;
+  transition: background 0.14s;
+}
+.export-btn button:active { background: var(--primary); }
+.autocomplete-list {
+  position: absolute;
+  top: 95%; left: 0; right: 0;
+  background: var(--card);
+  border-radius: 0 0 1rem 1rem;
+  box-shadow: 0 8px 18px #0004;
+  z-index: 11;
+  max-height: 186px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+}
+.autocomplete-item {
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  font-size: 1.01rem;
+  color: var(--text);
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+.autocomplete-item:last-child { border-bottom: none; }
+.autocomplete-item.active, .autocomplete-item:hover {
+  background: var(--primary-accent);
   color: #fff;
 }
-@media (max-width: 768px) {
-  main {
-    padding: 1rem;
-  }
-  nav ul {
-    flex-direction: column;
-    align-items: center;
-  }
+.cmd-card.swipe-remove {
+  animation: swipe-remove .27s forwards;
+}
+@keyframes swipe-remove {
+  to { transform: translateX(-120vw); opacity: 0; }
+}
+::-webkit-scrollbar { width: 0.7em; }
+::-webkit-scrollbar-thumb { background: var(--border);}
+::-webkit-scrollbar-track { background: var(--bg2);}
+@media (max-width: 520px) {
+  main { padding-bottom: 90px;}
 }
