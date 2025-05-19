@@ -303,7 +303,50 @@ function exportData(type) {
     a.click();
   }
 }
-document.getElementById('export-csv').onclick = ()=>exportData("csv");
+document.getElementById('export-csv').onclick = ()=>exportData("csv"); // ENVOI PAR MAIL des commandes terminées
+function mailExport() {
+  // Récupérer les commandes terminées
+  let done = commands.filter(c => c.status === "done");
+  if (!done.length) {
+    alert("Aucune commande terminée à envoyer.");
+    return;
+  }
+
+  // Construire le corps du mail
+  let lignes = [
+    "Voici les commandes de badges terminées :",
+    "",
+    "---------------------------------------",
+    ...done.map(cmd => [
+      `Nom badge  : ${cmd.name}`,
+      `Client     : ${cmd.client}`,
+      `Quantité   : ${cmd.qty}`,
+      `Format     : ${cmd.diam}`,
+      `Finition   : ${cmd.finish}`,
+      `Attache    : ${cmd.type}`,
+      `Carton     : ${cmd.carton}`,
+      `Créé le    : ${formatDate(cmd.startTime)}`,
+      `Terminé le : ${formatDate(cmd.endTime)}`,
+      `Durée      : ${formatDuration(cmd.durationSec)}`,
+      "---------------------------------------"
+    ].join("\n"))
+  ];
+
+  let mailBody = lignes.join("\n");
+
+  // Encode tout pour l'URL (mailto)
+  let subject = encodeURIComponent("Badges terminés - Synthèse V-MACH");
+  let body = encodeURIComponent(mailBody);
+
+  // Ici tu peux remplacer l'adresse si tu veux une valeur par défaut :
+  let mailto = `mailto:?subject=${subject}&body=${body}`;
+
+  // Ouvre le logiciel mail
+  window.open(mailto, "_blank");
+}
+
+document.getElementById('export-mail').onclick = mailExport;
+
 
 // STORAGE EVENTS (multi-onglet live sync)
 window.addEventListener("storage", ()=>{
