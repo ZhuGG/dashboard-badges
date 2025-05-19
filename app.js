@@ -129,6 +129,61 @@ document.getElementById('cmd-list').addEventListener('click', function(e) {
   let id = card?.getAttribute("data-id");
   let idx = commands.findIndex(c=>c.id===id);
 
+  // --- ÉDITION RAPIDE (crayon) ---
+  if (e.target.classList.contains('cmd-edit')) {
+    let cmd = commands[idx];
+    // Pré-remplir les champs du formulaire (même select !)
+    formAdd.style.display = "block";
+    fab.style.display = "none";
+    editIdx = idx;
+    Object.entries(cmd).forEach(([k, v]) => {
+      let input = formAdd.elements[k];
+      if(input) {
+        input.value = v;
+      }
+    });
+    // Pour faire apparaître la datalist correctement (safari)
+    formAdd.elements['client'].dispatchEvent(new Event("input"));
+    formAdd.scrollIntoView({behavior:"smooth",block:"center"});
+    formAdd.querySelector('button[type="submit"]').textContent = "Enregistrer";
+    setTimeout(()=>formAdd.querySelector('[name="client"]').focus(), 100);
+    return;
+  }
+
+  // --- RESTE INCHANGÉ ---
+  if (!btn || idx < 0) return;
+  let act = btn.getAttribute('data-act');
+  if (act==="pause") {
+    commands[idx].status = (commands[idx].status==="pause") ? "wait" : "pause";
+    saveCommands(commands);
+    renderList();
+    btn.classList.add("acted");
+    setTimeout(()=>btn.classList.remove("acted"), 520);
+  }
+  else if (act==="done") {
+    if (!commands[idx].endTime) {
+      commands[idx].endTime = Date.now();
+      commands[idx].durationSec = Math.floor((commands[idx].endTime-commands[idx].startTime)/1000);
+    }
+    commands[idx].status = "done";
+    saveCommands(commands);
+    renderList();
+    btn.classList.add("acted");
+    setTimeout(()=>btn.classList.remove("acted"), 520);
+  }
+  else if (act==="delete") {
+    if (confirm("Supprimer cette commande ? Cette action est irréversible.")) {
+      card.classList.add("swipe-remove");
+      setTimeout(()=>{
+        commands.splice(idx,1);
+        saveCommands(commands);
+        renderList();
+      },220);
+    }
+  }
+});
+
+
   // Edition rapide (clic sur crayon)
   if (e.target.classList.contains('cmd-edit')) {
     let cmd = commands[idx];
