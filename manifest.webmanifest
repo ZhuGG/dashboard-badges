@@ -1,13 +1,13 @@
 {
-  "name": "V-MACH Production Badges",
-  "short_name": "Badges V-MACH",
-  "description": "Suivi de production de badges V-MACH, offline et installable.",
+  "name": "V‑MACH Production Badges",
+  "short_name": "Badges V‑MACH",
+  "description": "Suivi de production de badges V‑MACH, installable et hors‑ligne.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0f1115",
-  "theme_color": "#ff4d6d",
+  "background_color": "#0e1015",
+  "theme_color": "#8efadb",
   "icons": [
     { "src": "logo-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "logo-512.png", "sizes": "512x512", "type": "image/png" }
