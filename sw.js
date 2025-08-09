@@ -1,4 +1,4 @@
-// sw.js
+// sw.js — V-MACH Badges PWA
 const VERSION = 'vmach-badges-v1.0.0';
 const ASSETS = [
   './',
@@ -6,13 +6,11 @@ const ASSETS = [
   './manifest.webmanifest',
   './logo-192.png',
   './logo-512.png'
-  // Ajoute ici d'autres fichiers statiques si tu les sépares (css/js).
+  // Ajoute ici des fichiers statiques si tu sépares CSS/JS
 ];
 
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(VERSION).then(cache => cache.addAll(ASSETS))
-  );
+  event.waitUntil(caches.open(VERSION).then(cache => cache.addAll(ASSETS)));
   self.skipWaiting();
 });
 
