@@ -27,53 +27,62 @@
 
     :root {
       color-scheme: dark;
-      --bg: #05070d;
-      --bg-alt: #0d1424;
-      --surface: rgba(16, 23, 38, 0.92);
-      --surface-strong: #10192d;
-      --surface-soft: rgba(19, 28, 46, 0.78);
-      --stroke: rgba(130, 166, 240, 0.16);
-      --text: #ebf3ff;
-      --muted: #8fa3c0;
-      --accent: #6fffe9;
-      --accent-2: #c38bff;
+      --bg: #030611;
+      --bg-alt: #050a16;
+      --surface: rgba(11, 19, 35, 0.9);
+      --surface-strong: #0b1324;
+      --surface-soft: rgba(14, 24, 42, 0.78);
+      --stroke: rgba(120, 178, 255, 0.18);
+      --text: #f3f6ff;
+      --muted: #92a2c2;
+      --accent: #8efadb;
+      --accent-2: #94a6ff;
+      --accent-soft: rgba(142, 250, 219, 0.22);
       --warn: #f6c945;
       --danger: #ff5774;
-      --ok: #3dd9a3;
-      --brand-gradient: linear-gradient(140deg, var(--accent) 0%, var(--accent-2) 100%);
+      --ok: #4fe5ad;
+      --brand-gradient: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
       --shadow-lg: 0 24px 46px rgba(4, 8, 20, 0.55);
-      --shadow-md: 0 14px 28px rgba(3, 12, 30, 0.42);
-      --radius-lg: 22px;
-      --radius-md: 16px;
+      --shadow-md: 0 14px 32px rgba(5, 10, 25, 0.45);
+      --radius-lg: 24px;
+      --radius-md: 18px;
       --radius-sm: 12px;
       --touch: 52px;
       --safe-bottom: env(safe-area-inset-bottom, 18px);
       --header-h: 208px;
       font-size: 16px;
     }
+    [data-theme="aurora"] {
+      --accent: #8efadb;
+      --accent-2: #94a6ff;
+      --surface: rgba(10, 21, 36, 0.92);
+      --surface-strong: #0d1630;
+      --surface-soft: rgba(16, 30, 52, 0.8);
+      --stroke: rgba(142, 250, 219, 0.2);
+    }
     [data-theme="sunset"] {
-      --accent: #ff9f68;
-      --accent-2: #ff5f8f;
-      --surface: rgba(36, 16, 25, 0.92);
-      --surface-strong: #22101a;
+      --accent: #ffb56b;
+      --accent-2: #ff6f91;
+      --surface: rgba(38, 16, 25, 0.92);
+      --surface-strong: #2a0f1d;
       --surface-soft: rgba(46, 18, 30, 0.78);
-      --stroke: rgba(255, 158, 140, 0.22);
+      --stroke: rgba(255, 158, 140, 0.24);
     }
     [data-theme="ocean"] {
-      --accent: #57c7ff;
+      --accent: #74e0ff;
       --accent-2: #4d9dff;
-      --surface: rgba(12, 26, 38, 0.92);
-      --surface-strong: #0d1f2f;
-      --surface-soft: rgba(10, 32, 48, 0.78);
-      --stroke: rgba(88, 172, 255, 0.22);
+      --surface: rgba(10, 26, 42, 0.92);
+      --surface-strong: #0a1d30;
+      --surface-soft: rgba(12, 32, 48, 0.78);
+      --stroke: rgba(104, 188, 255, 0.24);
     }
     [data-theme="forest"] {
       --accent: #41e4a0;
-      --accent-2: #6fffce;
+      --accent-2: #7fffd4;
       --surface: rgba(12, 30, 24, 0.92);
       --surface-strong: #0f261e;
-      --surface-soft: rgba(12, 36, 28, 0.78);
-      --stroke: rgba(107, 234, 180, 0.22);
+      --surface-soft: rgba(14, 36, 28, 0.78);
+      --stroke: rgba(107, 234, 180, 0.24);
     }
     [data-theme="classic"] {
       --accent: #6ab8ff;
@@ -92,9 +101,9 @@
       min-height: 100vh;
       font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
       background:
-        radial-gradient(130% 120% at 50% -20%, rgba(64, 118, 255, 0.32) 0%, transparent 55%),
-        radial-gradient(120% 120% at 85% 0%, rgba(195, 139, 255, 0.22) 0%, transparent 60%),
-        linear-gradient(180deg, #05070d 0%, #05060a 100%);
+        radial-gradient(120% 130% at 20% -10%, rgba(148, 166, 255, 0.24) 0%, transparent 55%),
+        radial-gradient(120% 160% at 80% 0%, rgba(142, 250, 219, 0.18) 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-alt) 100%);
       color: var(--text);
     }
     main {
@@ -109,11 +118,11 @@
       left: 0;
       right: 0;
       z-index: 60;
-      backdrop-filter: blur(18px) saturate(150%);
+      backdrop-filter: blur(20px) saturate(150%);
       background:
-        linear-gradient(180deg, rgba(9, 14, 24, 0.92) 0%, rgba(9, 14, 24, 0.65) 100%);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      box-shadow: 0 18px 40px rgba(3, 8, 20, 0.45);
+        linear-gradient(180deg, rgba(7, 12, 24, 0.92) 0%, rgba(7, 12, 24, 0.66) 100%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 0 22px 48px rgba(5, 10, 25, 0.55);
     }
     .topbar {
       max-width: 520px;
@@ -174,9 +183,11 @@
       display: grid;
       place-items: center;
       color: var(--text);
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.4);
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.02) 100%),
+        var(--surface);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 10px 26px rgba(6, 12, 24, 0.45);
     }
     .icon-btn:active {
       transform: translateY(1px) scale(0.98);
@@ -194,20 +205,21 @@
     }
     .chip-row .chip {
       flex: 0 0 auto;
-      padding: 8px 16px;
+      padding: 8px 18px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      color: var(--text);
+      color: var(--muted);
       font-weight: 600;
       letter-spacing: 0.1px;
-      transition: background 0.2s ease, border-color 0.2s ease;
+      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
       white-space: nowrap;
     }
     .chip-row .chip.active {
-      background: rgba(111, 255, 233, 0.18);
-      border-color: rgba(111, 255, 233, 0.42);
-      color: #ffffff;
+      background: var(--accent-soft);
+      border-color: rgba(142, 250, 219, 0.55);
+      color: var(--text);
+      box-shadow: 0 8px 18px rgba(8, 32, 26, 0.4);
     }
     .utility {
       display: flex;
@@ -269,11 +281,12 @@
       top: calc(var(--header-h) + 12px);
       right: 18px;
       left: auto;
-      max-width: min(320px, calc(100% - 36px));
-      padding: 14px 16px 18px;
+      max-width: min(360px, calc(100% - 36px));
+      padding: 16px 18px 20px;
       border-radius: var(--radius-lg);
-      background: var(--surface);
-      border: 1px solid var(--stroke);
+      background:
+        linear-gradient(165deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
+      border: 1px solid rgba(255, 255, 255, 0.12);
       box-shadow: var(--shadow-lg);
       transform-origin: top right;
       transform: scale(0.92);
@@ -300,28 +313,72 @@
     }
     .insights__row {
       display: grid;
-      gap: 10px;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     }
     .insight-card {
-      padding: 12px 14px;
+      padding: 14px 16px 16px;
       border-radius: var(--radius-md);
-      background: var(--surface-soft);
-      border: 1px solid var(--stroke);
+      background:
+        linear-gradient(165deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 75%),
+        var(--surface-soft);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 18px 32px rgba(4, 10, 24, 0.35);
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    .insight-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 60%);
+      opacity: 0.4;
+      pointer-events: none;
     }
     .insight-card span {
-      font-size: 0.8rem;
-      color: rgba(235, 243, 255, 0.65);
+      font-size: 0.75rem;
+      color: rgba(243, 246, 255, 0.68);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 1.2px;
     }
     .insight-card strong {
-      font-size: 1.6rem;
+      font-size: 1.7rem;
       font-weight: 700;
       color: var(--accent);
+      text-shadow: 0 6px 18px rgba(142, 250, 219, 0.35);
+    }
+    .insight-card small {
+      font-size: 0.8rem;
+      color: rgba(243, 246, 255, 0.68);
+      line-height: 1.3;
+    }
+    .insight-card--wide {
+      grid-column: span 2;
+    }
+    @media (max-width: 520px) {
+      .insight-card--wide {
+        grid-column: span 1;
+      }
+    }
+    .insight-progress {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      position: relative;
+    }
+    .insight-progress__bar {
+      position: absolute;
+      inset: 0;
+      width: 0;
+      background: var(--brand-gradient);
+      border-radius: inherit;
+      box-shadow: 0 4px 12px rgba(142, 250, 219, 0.35);
+      transition: width 0.25s ease;
     }
     .insights__actions {
       margin-top: 12px;
@@ -331,13 +388,18 @@
     }
 
     .ghost-small {
-      background: transparent;
+      background: rgba(255, 255, 255, 0.04);
       border: 1px dashed rgba(255, 255, 255, 0.25);
-      color: rgba(235, 243, 255, 0.8);
+      color: rgba(235, 243, 255, 0.85);
       border-radius: 999px;
       padding: 8px 14px;
       font-weight: 600;
       letter-spacing: 0.2px;
+      transition: border-color 0.2s ease, color 0.2s ease;
+    }
+    .ghost-small:hover {
+      border-color: var(--accent);
+      color: var(--accent);
     }
 
     #list {
@@ -346,12 +408,15 @@
       gap: 14px;
     }
     .card {
-      background: var(--surface);
+      background:
+        linear-gradient(155deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 80%),
+        var(--surface);
       border-radius: var(--radius-lg);
-      border: 1px solid var(--stroke);
-      padding: 16px 16px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 18px 18px 16px;
       box-shadow: var(--shadow-md);
       animation: fade 0.25s ease;
+      backdrop-filter: blur(2px);
     }
     @keyframes fade {
       from {
@@ -394,23 +459,23 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.8px;
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      color: rgba(235, 243, 255, 0.8);
+      color: rgba(235, 243, 255, 0.85);
     }
     .badge[data-s="pause"] {
-      background: rgba(246, 201, 69, 0.25);
-      border-color: rgba(246, 201, 69, 0.5);
-      color: #1d1400;
+      background: rgba(246, 201, 69, 0.22);
+      border-color: rgba(246, 201, 69, 0.55);
+      color: #1e1b09;
     }
     .badge[data-s="done"] {
-      background: rgba(61, 217, 163, 0.25);
-      border-color: rgba(61, 217, 163, 0.5);
-      color: #012f1e;
+      background: rgba(79, 229, 173, 0.25);
+      border-color: rgba(79, 229, 173, 0.55);
+      color: #022b1a;
     }
     .meta {
       margin-top: 10px;
-      color: rgba(235, 243, 255, 0.7);
+      color: rgba(235, 243, 255, 0.72);
       font-size: 0.82rem;
       display: flex;
       flex-wrap: wrap;
@@ -423,9 +488,9 @@
     .note {
       margin-top: 10px;
       font-size: 0.84rem;
-      color: rgba(235, 243, 255, 0.7);
-      background: var(--surface-soft);
-      border: 1px dashed var(--stroke);
+      color: rgba(235, 243, 255, 0.76);
+      background: rgba(13, 24, 42, 0.85);
+      border: 1px dashed rgba(255, 255, 255, 0.12);
       padding: 10px 12px;
       border-radius: var(--radius-sm);
     }
@@ -439,41 +504,48 @@
       min-height: var(--touch);
       border-radius: var(--radius-sm);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(12, 19, 30, 0.75);
+      background: rgba(10, 20, 36, 0.82);
       color: var(--text);
       font-weight: 700;
       letter-spacing: 0.2px;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 22px rgba(5, 12, 26, 0.35);
     }
     .btn[data-a="pause"] {
-      background: rgba(246, 201, 69, 0.2);
-      color: #1d1400;
-      border-color: rgba(246, 201, 69, 0.4);
+      background: rgba(246, 201, 69, 0.24);
+      color: #1f1908;
+      border-color: rgba(246, 201, 69, 0.45);
     }
     .btn[data-a="done"] {
-      background: rgba(61, 217, 163, 0.22);
-      color: #012f1e;
-      border-color: rgba(61, 217, 163, 0.4);
+      background: rgba(79, 229, 173, 0.25);
+      color: #012c1b;
+      border-color: rgba(79, 229, 173, 0.45);
     }
     .btn[data-a="del"] {
-      background: rgba(255, 87, 116, 0.25);
+      background: rgba(255, 87, 116, 0.28);
       color: #ffeef2;
-      border-color: rgba(255, 87, 116, 0.4);
+      border-color: rgba(255, 87, 116, 0.45);
     }
     .awaiting-long {
-      border-color: rgba(195, 139, 255, 0.45);
-      box-shadow: 0 0 0 1px rgba(195, 139, 255, 0.35) inset, var(--shadow-md);
+      border-color: rgba(148, 166, 255, 0.55);
+      box-shadow: 0 0 0 1px rgba(148, 166, 255, 0.45) inset, var(--shadow-md);
     }
 
     .empty-state {
       margin-top: 30px;
-      padding: 24px;
+      padding: 26px;
       border-radius: var(--radius-lg);
-      border: 1px dashed rgba(255, 255, 255, 0.16);
-      background: rgba(12, 22, 35, 0.6);
+      border: 1px dashed rgba(255, 255, 255, 0.18);
+      background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
       text-align: center;
-      color: rgba(235, 243, 255, 0.7);
+      color: rgba(235, 243, 255, 0.72);
       line-height: 1.5;
+      box-shadow: 0 16px 28px rgba(6, 12, 26, 0.35);
     }
     .empty-state strong {
       display: block;
@@ -491,12 +563,13 @@
     }
     .pill {
       border: 1px solid rgba(255, 255, 255, 0.12);
-      background: rgba(18, 27, 42, 0.8);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
       color: var(--text);
       border-radius: 999px;
-      padding: 10px 18px;
+      padding: 10px 20px;
       font-weight: 700;
       letter-spacing: 0.2px;
+      box-shadow: 0 12px 26px rgba(5, 10, 24, 0.35);
     }
 
     .fab {
@@ -506,10 +579,10 @@
       width: 68px;
       height: 68px;
       border-radius: 50%;
-      background: linear-gradient(140deg, var(--accent) 0%, var(--accent-2) 100%);
-      color: #06141f;
+      background: var(--brand-gradient);
+      color: #07121f;
       border: none;
-      box-shadow: 0 24px 44px rgba(0, 0, 0, 0.55);
+      box-shadow: 0 26px 48px rgba(8, 16, 30, 0.6);
       font-size: 34px;
     }
     .fab:active {
@@ -581,9 +654,14 @@
       margin-top: 12px;
     }
     .ghost {
-      background: transparent;
-      border: 1px dashed rgba(255, 255, 255, 0.22);
-      color: rgba(235, 243, 255, 0.75);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px dashed rgba(255, 255, 255, 0.24);
+      color: rgba(235, 243, 255, 0.8);
+      transition: border-color 0.2s ease, color 0.2s ease;
+    }
+    .ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
     }
     .theme-grid {
       display: flex;
@@ -702,10 +780,37 @@
       <div class="insight-card">
         <span>Badges fabriqués</span>
         <strong id="insightBadges">0</strong>
+        <small>Depuis la dernière remise à zéro</small>
       </div>
       <div class="insight-card">
         <span>Total commandes</span>
         <strong id="insightOrders">0</strong>
+        <small>Commandes enregistrées</small>
+      </div>
+      <div class="insight-card">
+        <span>En cours</span>
+        <strong id="insightWaiting">0</strong>
+        <small>Commandes actives</small>
+      </div>
+      <div class="insight-card">
+        <span>En pause</span>
+        <strong id="insightPaused">0</strong>
+        <small>Temporisées</small>
+      </div>
+      <div class="insight-card insight-card--wide">
+        <span>Durée moyenne (terminées)</span>
+        <strong id="insightAvg">—</strong>
+        <small id="insightAvgDetail">Aucune commande terminée</small>
+      </div>
+      <div class="insight-card insight-card--wide">
+        <span>Temps actif cumulé</span>
+        <strong id="insightActive">—</strong>
+        <div class="insight-progress" aria-hidden="true">
+          <div class="insight-progress__bar" id="insightCompletionBar"></div>
+        </div>
+        <small>
+          <b id="insightDoneCount">0</b> terminées • <span id="insightCompletionLabel">0%</span> de progression
+        </small>
       </div>
     </div>
     <div class="insights__actions">
@@ -848,12 +953,23 @@
     const STATS_BASE = "vmach_stats_baseline_v1";
     let items = load();
     let statsBaseline = loadStatsBaseline();
-    let lastStats = { produced: 0, totalOrders: 0 };
+    let lastStats = {
+      produced: 0,
+      totalOrders: 0,
+      waiting: 0,
+      paused: 0,
+      avgDurationSec: 0,
+      activeSec: 0,
+      completion: 0,
+      doneCount: 0,
+    };
     let filter = "all",
       search = "";
     let sortBy = localStorage.getItem("vmach_sort") || "recent";
     let editId = null;
     let liveTimer = null; // global unique (fix redeclaration)
+
+    items = items.map(enrichItemState);
 
     const $ = (sel) => document.querySelector(sel);
     const listEl = $("#list");
@@ -915,6 +1031,36 @@
       const totalValue = Math.max(0, (lastStats.totalOrders || 0) - (base.totalOrders || 0));
       badges.textContent = producedValue.toLocaleString("fr-FR");
       orders.textContent = totalValue.toLocaleString("fr-FR");
+
+      const waitingEl = document.getElementById("insightWaiting");
+      if (waitingEl) waitingEl.textContent = (lastStats.waiting || 0).toLocaleString("fr-FR");
+
+      const pausedEl = document.getElementById("insightPaused");
+      if (pausedEl) pausedEl.textContent = (lastStats.paused || 0).toLocaleString("fr-FR");
+
+      const avgEl = document.getElementById("insightAvg");
+      if (avgEl) avgEl.textContent = lastStats.avgDurationSec ? fmtDur(lastStats.avgDurationSec) : "—";
+
+      const avgDetail = document.getElementById("insightAvgDetail");
+      if (avgDetail) {
+        const count = lastStats.doneCount || 0;
+        avgDetail.textContent = count
+          ? `${count.toLocaleString("fr-FR")} commande${count > 1 ? "s" : ""} terminée${count > 1 ? "s" : ""}`
+          : "Aucune commande terminée";
+      }
+
+      const activeEl = document.getElementById("insightActive");
+      if (activeEl) activeEl.textContent = lastStats.activeSec ? fmtDur(lastStats.activeSec) : "—";
+
+      const doneCountEl = document.getElementById("insightDoneCount");
+      if (doneCountEl) doneCountEl.textContent = (lastStats.doneCount || 0).toLocaleString("fr-FR");
+
+      const completionLabel = document.getElementById("insightCompletionLabel");
+      const completionBar = document.getElementById("insightCompletionBar");
+      const completionRatio = Math.max(0, Math.min(1, lastStats.completion || 0));
+      const completionPercent = Math.round(completionRatio * 100);
+      if (completionLabel) completionLabel.textContent = `${completionPercent.toLocaleString("fr-FR")} %`;
+      if (completionBar) completionBar.style.width = `${completionPercent}%`;
     }
 
     async function ensureStoragePersistence() {
@@ -988,7 +1134,7 @@
       await ensureStoragePersistence();
       const persisted = await loadFromIndexedDB();
       if (Array.isArray(persisted)) {
-        items = persisted;
+        items = persisted.map(enrichItemState);
         render();
       } else {
         saveToIndexedDB(items);
@@ -1066,7 +1212,7 @@
       await ensureStoragePersistence();
       const persisted = await loadFromIndexedDB();
       if (Array.isArray(persisted)) {
-        items = persisted;
+        items = persisted.map(enrichItemState);
         render();
       } else {
         saveToIndexedDB(items);
@@ -1081,7 +1227,9 @@
       return Date.now();
     }
     function fmtDate(ts) {
+      if (!ts) return "—";
       const d = new Date(ts);
+      if (Number.isNaN(d.getTime())) return "—";
       return (
         d.toLocaleDateString("fr-FR") +
         " " +
@@ -1102,8 +1250,107 @@
       return String(t).replace(/[&<>\"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[m]));
     }
 
+    function ensureTimerFields(item) {
+      if (!item || typeof item !== "object") return;
+      const active = Number(item.activeMs);
+      if (!Number.isFinite(active) || active < 0) {
+        const fallback = Number(item.durationSec || 0) * 1000;
+        item.activeMs = Number.isFinite(fallback) && fallback > 0 ? fallback : 0;
+      } else {
+        item.activeMs = active;
+      }
+      if (typeof item.durationSec !== "number" || Number.isNaN(item.durationSec) || item.durationSec < 0) {
+        item.durationSec = item.status === "done" ? Math.floor(item.activeMs / 1000) : 0;
+      }
+      if (item.status === "wait") {
+        item.lastResumeTime = item.lastResumeTime || item.startTime || now();
+      } else if (item.status !== "wait") {
+        item.lastResumeTime = null;
+      }
+    }
+
+    function enrichItemState(item) {
+      if (!item || typeof item !== "object") return item;
+      if (!item.startTime) {
+        item.startTime = now();
+      }
+      ensureTimerFields(item);
+      if (item.status === "done") {
+        item.durationSec = Math.floor(item.activeMs / 1000);
+      }
+      return item;
+    }
+
+    function getActiveMs(item, ref = now()) {
+      if (!item) return 0;
+      ensureTimerFields(item);
+      if (item.status === "wait" && item.lastResumeTime) {
+        return item.activeMs + Math.max(0, ref - item.lastResumeTime);
+      }
+      return item.activeMs;
+    }
+
+    function getEffectiveSeconds(item, ref = now()) {
+      return Math.floor(getActiveMs(item, ref) / 1000);
+    }
+
+    function transitionStatus(item, nextStatus, ts = now()) {
+      if (!item) return;
+      ensureTimerFields(item);
+      const current = item.status;
+      if (current === nextStatus) {
+        if (nextStatus === "wait" && !item.lastResumeTime) {
+          item.lastResumeTime = ts;
+        }
+        if (nextStatus === "done") {
+          item.durationSec = Math.floor(item.activeMs / 1000);
+        }
+        return;
+      }
+      if (nextStatus === "wait") {
+        if (current === "wait") return;
+        if (current === "done") {
+          item.durationSec = Math.floor(item.activeMs / 1000);
+        }
+        item.status = "wait";
+        item.endTime = null;
+        item.lastResumeTime = ts;
+        return;
+      }
+      if (nextStatus === "pause") {
+        if (current === "wait" && item.lastResumeTime) {
+          item.activeMs += Math.max(0, ts - item.lastResumeTime);
+        }
+        item.status = "pause";
+        item.lastResumeTime = null;
+        item.endTime = ts;
+        item.durationSec = Math.floor(item.activeMs / 1000);
+        return;
+      }
+      if (nextStatus === "done") {
+        if (current === "wait" && item.lastResumeTime) {
+          item.activeMs += Math.max(0, ts - item.lastResumeTime);
+        }
+        item.status = "done";
+        item.lastResumeTime = null;
+        item.endTime = ts;
+        item.durationSec = Math.floor(item.activeMs / 1000);
+        return;
+      }
+      item.status = nextStatus;
+    }
+
     function newItem(o) {
-      return {
+      const createdAt = now();
+      const start = o.startTime || createdAt;
+      const status = o.status || "wait";
+      const baseDuration = Number(o.durationSec || 0);
+      const activeMs = Number(o.activeMs);
+      let endTime = o.endTime || null;
+      if (!endTime && (status === "pause" || status === "done")) {
+        endTime = createdAt;
+      }
+      const item = {
         id: String(Date.now()) + Math.random().toString(16).slice(2),
         client: o.client.trim(),
         name: o.name.trim(),
@@ -1112,12 +1359,22 @@
         finish: o.finish,
         type: o.type,
         carton: o.carton,
-        status: o.status || "wait",
+        status,
         note: (o.note || "").trim(),
-        startTime: o.startTime || now(),
-        endTime: o.endTime || null,
-        durationSec: o.durationSec || 0,
+        startTime: start,
+        endTime,
+        durationSec: baseDuration > 0 ? baseDuration : 0,
+        activeMs: Number.isFinite(activeMs) && activeMs >= 0 ? activeMs : Math.max(0, baseDuration) * 1000,
+        lastResumeTime: null,
       };
+      if (item.status === "wait") {
+        item.lastResumeTime = o.lastResumeTime || start;
+      }
+      enrichItemState(item);
+      if (item.status === "done") {
+        item.durationSec = Math.floor(item.activeMs / 1000);
+      }
+      return item;
     }
 
     /* ====== Theme & Settings ====== */
@@ -1322,24 +1579,26 @@
 
       if (editId) {
         const ix = items.findIndex((x) => x.id === editId);
-        const prev = items[ix];
-        const becameDone = o.status === "done" && prev.status !== "done";
-        if (becameDone) {
-          const end = now();
-          items[ix].endTime = end;
-          items[ix].durationSec = Math.floor((end - (prev.startTime || end)) / 1000);
+        if (ix >= 0) {
+          const item = items[ix];
+          const prevStatus = item.status;
+          const nextStatus = o.status || "wait";
+          Object.assign(item, o);
+          enrichItemState(item);
+          item.status = prevStatus;
+          transitionStatus(item, nextStatus, now());
+          if (nextStatus === "done" && prevStatus !== "done") {
+            confettiBurst();
+          }
         }
-        if (o.status === "wait" && prev.status !== "wait") {
-          items[ix].endTime = null;
-        }
-        if (o.status === "pause") {
-          items[ix].endTime = now();
-        }
-        Object.assign(items[ix], o);
-        if (becameDone) confettiBurst();
       } else {
-        items.unshift(newItem(o));
+        const created = newItem(o);
+        items.unshift(created);
         cardInAnimationNextRender = true;
+        transitionStatus(created, created.status, now());
+        if (created.status === "done") {
+          confettiBurst();
+        }
       }
       save();
       render();
@@ -1351,11 +1610,28 @@
     let cardInAnimationNextRender = false;
 
     function computeStats() {
-      const produced = items
-        .filter((i) => i.status === "done")
-        .reduce((total, item) => total + (Number(item.qty) || 0), 0);
+      const nowTs = now();
+      const doneItems = items.filter((i) => i.status === "done");
+      const produced = doneItems.reduce((total, item) => total + (Number(item.qty) || 0), 0);
       const totalOrders = items.length;
-      lastStats = { produced, totalOrders };
+      const waiting = items.filter((i) => i.status === "wait").length;
+      const paused = items.filter((i) => i.status === "pause").length;
+      const doneActiveMs = doneItems.reduce((sum, item) => sum + getActiveMs(item, nowTs), 0);
+      const avgDurationSec = doneItems.length ? Math.round(doneActiveMs / doneItems.length / 1000) : 0;
+      const activeSec = Math.floor(
+        items.reduce((sum, item) => sum + getActiveMs(item, nowTs), 0) / 1000
+      );
+      const completion = totalOrders ? doneItems.length / totalOrders : 0;
+      lastStats = {
+        produced,
+        totalOrders,
+        waiting,
+        paused,
+        avgDurationSec,
+        activeSec,
+        completion,
+        doneCount: doneItems.length,
+      };
       updateInsightsDisplay();
     }
 
@@ -1374,6 +1650,7 @@
     }
 
     function render() {
+      items.forEach(enrichItemState);
       computeStats();
       const list = listEl;
 
@@ -1403,15 +1680,14 @@
         return s.includes(search);
       });
 
+      const nowTs = now();
       const show = sortItems(filtered);
 
       list.innerHTML = show
         .map((i) => {
           const isWait = i.status === "wait";
-          const liveSec = isWait
-            ? Math.floor(((i.endTime || Date.now()) - (i.startTime || Date.now())) / 1000)
-            : i.durationSec;
-          const longAwait = isWait && now() - (i.startTime || now()) > 3600 * 1000;
+          const liveSec = getEffectiveSeconds(i, nowTs);
+          const longAwait = isWait && nowTs - (i.startTime || nowTs) > 3600 * 1000;
           const cls = longAwait ? "card awaiting-long" : "card";
           return `
           <div class="${cls}" data-id="${i.id}">
@@ -1429,13 +1705,13 @@
               <span>Créé : ${fmtDate(i.startTime)}</span>
               ${
                 i.status === "done"
-                  ? `<span>Durée : <b>${fmtDur(i.durationSec)}</b></span><span>Terminé : ${fmtDate(
+                  ? `<span>Durée effective : <b>${fmtDur(i.durationSec || liveSec)}</b></span><span>Terminé : ${fmtDate(
                       i.endTime
                     )}</span>`
                   : i.status === "pause"
-                  ? `<span>En pause</span><span>Dernier arrêt : ${
-                      i.endTime ? fmtDate(i.endTime) : "—"
-                    }</span>`
+                  ? `<span>En pause : <b>${fmtDur(liveSec)}</b></span><span>Dernier arrêt : ${fmtDate(
+                      i.endTime
+                    )}</span>`
                   : `<span>En cours : <b data-role="timer">${fmtDur(liveSec)}</b></span>`
               }
             </div>
@@ -1463,13 +1739,14 @@
 
       // live timer uniquement pour "wait"
       liveTimer = setInterval(() => {
+        const tick = now();
         document.querySelectorAll(".card").forEach((card) => {
           const id = card.dataset.id;
           const it = items.find((x) => x.id === id);
           if (!it || it.status !== "wait") return;
           const b = card.querySelector("[data-role='timer']");
           if (!b) return;
-          const d = Math.floor(((it.endTime || Date.now()) - (it.startTime || Date.now())) / 1000);
+          const d = getEffectiveSeconds(it, tick);
           b.textContent = fmtDur(d);
         });
       }, 1000);
@@ -1494,12 +1771,11 @@
       }
 
       if (act === "pause") {
+        const ts = now();
         if (items[ix].status === "pause") {
-          items[ix].status = "wait";
-          items[ix].endTime = null;
+          transitionStatus(items[ix], "wait", ts);
         } else {
-          items[ix].status = "pause";
-          items[ix].endTime = now();
+          transitionStatus(items[ix], "pause", ts);
         }
         save();
         render();
@@ -1508,15 +1784,12 @@
       }
 
       if (act === "done") {
+        const ts = now();
         if (items[ix].status !== "done") {
-          const end = now();
-          items[ix].endTime = end;
-          items[ix].durationSec = Math.floor((end - (items[ix].startTime || end)) / 1000);
-          items[ix].status = "done";
+          transitionStatus(items[ix], "done", ts);
           confettiBurst();
         } else {
-          items[ix].status = "wait";
-          items[ix].endTime = null;
+          transitionStatus(items[ix], "wait", ts);
         }
         save();
         render();
@@ -1717,18 +1990,21 @@
         alert("Aucune commande terminée.");
         return;
       }
+      const nowTs = now();
       const rows = done
-        .map(
-          (i) => `
+        .map((i) => {
+          const durSec = getEffectiveSeconds(i, nowTs);
+          const durCell = withDur ? `<td>${fmtDur(durSec)}</td>` : "";
+          return `
         <tr>
           <td>${escapeHtml(i.name)}</td>
           <td>${escapeHtml(i.client)}</td>
           <td style="text-align:right">${i.qty}</td>
           <td>${i.diam}</td><td>${i.finish}</td><td>${i.type}</td><td>${i.carton}</td>
-          <td>${fmtDate(i.startTime)}</td><td>${i.endTime ? fmtDate(i.endTime) : "—"}</td>
-          ${withDur ? `<td>${fmtDur(i.durationSec)}</td>` : ""}
-        </tr>`
-        )
+          <td>${fmtDate(i.startTime)}</td><td>${fmtDate(i.endTime)}</td>
+          ${durCell}
+        </tr>`;
+        })
         .join("");
 
       const headCols = `<th>Nom</th><th>Client</th><th>Qté</th><th>Format</th><th>Finition</th><th>Attache</th><th>Carton</th><th>Créé</th><th>Terminé</th>${
@@ -1740,16 +2016,53 @@
           <tbody>${rows}</tbody>
         </table>`;
 
-      copyToClipboard(htmlTable).then(() => {
-        const d = new Date();
-        const subject = encodeURIComponent(
-          `Synthèse badges V‑MACH terminés – ${d.toLocaleDateString("fr-FR")}`
-        );
-        const body = encodeURIComponent(
-          `Bonjour,\n\nLe tableau HTML est déjà copié dans votre presse‑papiers.\nCollez‑le dans l'e‑mail.\n\n—\nV‑MACH Production Badges`
-        );
+      const totalQty = done.reduce((sum, i) => sum + (Number(i.qty) || 0), 0);
+      const totalActiveSec = Math.floor(done.reduce((sum, i) => sum + getActiveMs(i, nowTs), 0) / 1000);
+      const avgSec = done.length ? Math.round(totalActiveSec / done.length) : 0;
+      const listLines = done
+        .map((i, idx) => {
+          const durSec = getEffectiveSeconds(i, nowTs);
+          const durLabel = withDur && durSec ? ` • Durée: ${fmtDur(durSec)}` : "";
+          const endLabel = fmtDate(i.endTime);
+          const endPart = endLabel !== "—" ? ` • Terminé: ${endLabel}` : "";
+          return `${idx + 1}. ${i.name} — ${i.client}\n   Qté: ${i.qty} • Format: ${i.diam} • Finition: ${i.finish} • Attache: ${i.type} • Carton: ${i.carton}\n   Créé: ${fmtDate(i.startTime)}${endPart}${durLabel}`;
+        })
+        .join("\n\n");
+
+      const summaryParts = [
+        "Bonjour,",
+        "",
+        `Voici la synthèse des badges terminés (${done.length} commande${done.length > 1 ? "s" : ""}).`,
+        "",
+        `Total badges : ${totalQty.toLocaleString("fr-FR")}`,
+      ];
+      if (withDur && totalActiveSec) {
+        summaryParts.push(`Temps actif cumulé : ${fmtDur(totalActiveSec)}`);
+      }
+      if (withDur && avgSec) {
+        summaryParts.push(`Durée moyenne : ${fmtDur(avgSec)}`);
+      }
+      if (listLines) {
+        summaryParts.push("", listLines);
+      }
+      summaryParts.push(
+        "",
+        "Le tableau HTML détaillé est copié dans votre presse-papiers pour un collage rapide.",
+        "",
+        "—",
+        "V‑MACH Production Badges"
+      );
+      const plainBody = summaryParts.filter(Boolean).join("\n");
+      const d = new Date();
+      const subject = encodeURIComponent(
+        `Synthèse badges V‑MACH terminés – ${d.toLocaleDateString("fr-FR")}`
+      );
+      const body = encodeURIComponent(plainBody);
+
+      const afterCopy = () => {
         window.location.href = `mailto:?subject=${subject}&body=${body}`;
-      });
+      };
+      copyToClipboard(htmlTable).then(afterCopy).catch(afterCopy);
       vibrate();
     };
 
@@ -1827,7 +2140,7 @@
     initPersistentState();
 
     window.addEventListener("storage", () => {
-      items = load();
+      items = load().map(enrichItemState);
       saveToIndexedDB(items);
       render();
     });
