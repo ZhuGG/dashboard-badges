@@ -698,6 +698,17 @@
     let liveTimer = null; // global unique (fix redeclaration)
 
     const $ = (sel) => document.querySelector(sel);
+    const listEl = $("#list");
+
+    let sortableInstance = null;
+    let swipeStartX = 0;
+    let swipeMoving = false;
+    let swipeCard = null;
+
+    const DB_NAME = "vmach_badges_db";
+    const DB_STORE = "state";
+    const DB_VERSION = 1;
+    let dbPromise = null;
 
     function load() {
       try {
@@ -709,7 +720,86 @@
     }
     function save() {
       localStorage.setItem(K, JSON.stringify(items));
+      saveToIndexedDB(items);
       window.dispatchEvent(new Event("storage"));
+    }
+
+    async function ensureStoragePersistence() {
+      if (!navigator.storage?.persist) return;
+      try {
+        const persisted = await navigator.storage.persisted();
+        if (!persisted) {
+          await navigator.storage.persist();
+        }
+      } catch (err) {
+        console.warn("Storage persistence request failed", err);
+      }
+    }
+
+    function getDb() {
+      if (!("indexedDB" in window)) return Promise.resolve(null);
+      if (!dbPromise) {
+        dbPromise = new Promise((resolve, reject) => {
+          const req = indexedDB.open(DB_NAME, DB_VERSION);
+          req.onerror = () => reject(req.error);
+          req.onupgradeneeded = () => {
+            const db = req.result;
+            if (!db.objectStoreNames.contains(DB_STORE)) {
+              db.createObjectStore(DB_STORE, { keyPath: "id" });
+            }
+          };
+          req.onsuccess = () => {
+            const db = req.result;
+            db.onversionchange = () => {
+              db.close();
+              dbPromise = null;
+            };
+            resolve(db);
+          };
+        }).catch((err) => {
+          console.warn("IndexedDB unavailable", err);
+          return null;
+        });
+      }
+      return dbPromise;
+    }
+
+    async function loadFromIndexedDB() {
+      const db = await getDb();
+      if (!db) return null;
+      return new Promise((resolve) => {
+        const tx = db.transaction(DB_STORE, "readonly");
+        const store = tx.objectStore(DB_STORE);
+        const req = store.get("items");
+        req.onsuccess = () => {
+          resolve(Array.isArray(req.result?.items) ? req.result.items : null);
+        };
+        req.onerror = () => resolve(null);
+      });
+    }
+
+    function saveToIndexedDB(data) {
+      getDb()
+        .then((db) => {
+          if (!db) return;
+          const tx = db.transaction(DB_STORE, "readwrite");
+          const store = tx.objectStore(DB_STORE);
+          store.put({ id: "items", items: data, updatedAt: Date.now() });
+          tx.onerror = () => console.warn("IndexedDB write failed", tx.error);
+          tx.onabort = () => console.warn("IndexedDB write aborted", tx.error);
+        })
+        .catch((err) => console.warn("IndexedDB write failed", err));
+    }
+
+    async function initPersistentState() {
+      await ensureStoragePersistence();
+      const persisted = await loadFromIndexedDB();
+      if (Array.isArray(persisted)) {
+        items = persisted;
+        render();
+      } else {
+        saveToIndexedDB(items);
+      }
     }
 
     function vibrate(ms = 25) {
@@ -925,7 +1015,8 @@
       if (editId) {
         const ix = items.findIndex((x) => x.id === editId);
         const prev = items[ix];
-        if (o.status === "done" && prev.status !== "done") {
+        const becameDone = o.status === "done" && prev.status !== "done";
+        if (becameDone) {
           const end = now();
           items[ix].endTime = end;
           items[ix].durationSec = Math.floor((end - (prev.startTime || end)) / 1000);
@@ -937,7 +1028,7 @@
           items[ix].endTime = now();
         }
         Object.assign(items[ix], o);
-        confettiBurst();
+        if (becameDone) confettiBurst();
       } else {
         items.unshift(newItem(o));
         cardInAnimationNextRender = true;
@@ -984,7 +1075,7 @@
 
     function render() {
       computeStats();
-      const list = $("#list");
+      const list = listEl;
 
       // stop previous live timer (global unique)
       if (liveTimer) {
@@ -1079,136 +1170,157 @@
         });
       }, 1000);
 
-      // actions
-      list.onclick = (e) => {
-        const card = e.target.closest(".card");
-        if (!card) return;
-        const id = card.dataset.id;
-        const ix = items.findIndex((x) => x.id === id);
-        if (ix < 0) return;
-        const act = e.target.closest("[data-a]")?.dataset.a;
-        if (!act) return;
+      ensureSortable();
+    }
 
-        if (act === "edit") {
-          openSheet(items[ix]);
-          vibrate();
+    function handleListClick(e) {
+      const card = e.target.closest(".card");
+      if (!card) return;
+      const id = card.dataset.id;
+      const ix = items.findIndex((x) => x.id === id);
+      if (ix < 0) return;
+      const act = e.target.closest("[data-a]")?.dataset.a;
+      if (!act) return;
+
+      if (act === "edit") {
+        openSheet(items[ix]);
+        vibrate();
+        return;
+      }
+
+      if (act === "pause") {
+        if (items[ix].status === "pause") {
+          items[ix].status = "wait";
+          items[ix].endTime = null;
+        } else {
+          items[ix].status = "pause";
+          items[ix].endTime = now();
+        }
+        save();
+        render();
+        vibrate();
+        return;
+      }
+
+      if (act === "done") {
+        if (items[ix].status !== "done") {
+          const end = now();
+          items[ix].endTime = end;
+          items[ix].durationSec = Math.floor((end - (items[ix].startTime || end)) / 1000);
+          items[ix].status = "done";
+          confettiBurst();
+        } else {
+          items[ix].status = "wait";
+          items[ix].endTime = null;
+        }
+        save();
+        render();
+        vibrate();
+        return;
+      }
+
+      if (act === "del") {
+        const item = items[ix];
+        const label = item?.name ? `« ${item.name} »` : "cette commande";
+        if (!confirm(`Supprimer ${label} ?`)) {
+          resetSwipeStyles(card);
           return;
         }
-
-        if (act === "pause") {
-          if (items[ix].status === "pause") {
-            items[ix].status = "wait";
-            items[ix].endTime = null;
-          } else {
-            items[ix].status = "pause";
-            items[ix].endTime = now();
-          }
+        card.style.transform = "translateX(-110%)";
+        card.style.opacity = ".0";
+        setTimeout(() => {
+          items.splice(ix, 1);
           save();
           render();
-          vibrate();
-        }
+        }, 200);
+        vibrate(35);
+      }
+    }
 
-        if (act === "done") {
-          if (items[ix].status !== "done") {
-            const end = now();
-            items[ix].endTime = end;
-            items[ix].durationSec = Math.floor(
-              (end - (items[ix].startTime || end)) / 1000
-            );
-            items[ix].status = "done";
-            confettiBurst();
-          } else {
-            items[ix].status = "wait";
-            items[ix].endTime = null;
-          }
-          save();
-          render();
-          vibrate();
-        }
+    function ensureSortable() {
+      if (sortableInstance || !listEl || typeof Sortable === "undefined") return;
+      sortableInstance = new Sortable(listEl, {
+        handle: ".handle",
+        animation: 160,
+        onEnd: handleSortEnd,
+      });
+    }
 
-        if (act === "del") {
-          card.style.transform = "translateX(-110%)";
-          card.style.opacity = ".0";
-          setTimeout(() => {
-            items.splice(ix, 1);
-            save();
-            render();
-          }, 200);
-          vibrate(35);
-        }
-      };
+    function handleSortEnd() {
+      const cards = Array.from(listEl.querySelectorAll(".card"));
+      const visibleIds = cards.map((c) => c.dataset.id);
+      const map = new Map(visibleIds.map((id, i) => [id, i]));
+      items = items
+        .slice()
+        .sort((a, b) => {
+          const ia = map.has(a.id) ? map.get(a.id) + 0.1 : 9999 + items.indexOf(a);
+          const ib = map.has(b.id) ? map.get(b.id) + 0.1 : 9999 + items.indexOf(b);
+          return ia - ib;
+        });
+      save();
+      render();
+      vibrate();
+    }
 
-      // long-press edit
-      list.addEventListener("pointerdown", onPressStart);
-      list.addEventListener("pointerup", onPressEnd);
-      list.addEventListener("pointercancel", onPressEnd);
+    function resetSwipeStyles(card) {
+      if (!card) return;
+      card.style.transform = "";
+      card.style.opacity = "";
+    }
 
-      // swipe delete
-      let sx = 0,
-        moving = false;
-      list.addEventListener(
-        "touchstart",
-        (e) => {
-          const c = e.target.closest(".card");
-          if (!c) return;
-          sx = e.touches[0].clientX;
-          moving = true;
-          c.style.transition = "";
-        },
-        { passive: true }
-      );
-      list.addEventListener(
-        "touchmove",
-        (e) => {
-          if (!moving) return;
-          const c = e.target.closest(".card");
-          if (!c) return;
-          const dx = e.touches[0].clientX - sx;
-          if (dx > -10) return;
-          c.style.transform = `translateX(${dx}px)`;
-          c.style.opacity = String(1 - Math.min(1, Math.abs(dx) / 180));
-        },
-        { passive: true }
-      );
-      list.addEventListener("touchend", (e) => {
-        const c = e.target.closest(".card");
-        if (!c) return;
-        moving = false;
-        c.style.transition = ".18s";
-        const dx = e.changedTouches[0].clientX - sx;
-        if (dx < -90) {
-          const id = c.dataset.id;
+    function onTouchStart(e) {
+      const card = e.target.closest(".card");
+      if (!card) return;
+      swipeCard = card;
+      swipeStartX = e.touches[0]?.clientX || 0;
+      swipeMoving = true;
+      card.style.transition = "";
+    }
+
+    function onTouchMove(e) {
+      if (!swipeMoving || !swipeCard) return;
+      const touchX = e.touches[0]?.clientX;
+      if (typeof touchX !== "number") return;
+      const dx = touchX - swipeStartX;
+      if (Math.abs(dx) > 6) onPressEnd();
+      if (dx > -10) return;
+      swipeCard.style.transform = `translateX(${dx}px)`;
+      swipeCard.style.opacity = String(1 - Math.min(1, Math.abs(dx) / 180));
+    }
+
+    function onTouchEnd(e) {
+      if (!swipeCard) return;
+      const card = swipeCard;
+      const touchX = e.changedTouches[0]?.clientX;
+      const dx = (touchX ?? swipeStartX) - swipeStartX;
+      swipeMoving = false;
+      swipeCard = null;
+      card.style.transition = ".18s";
+      if (dx < -90) {
+        const id = card.dataset.id;
+        const item = items.find((it) => it.id === id);
+        const label = item?.name ? `« ${item.name} »` : "cette commande";
+        if (confirm(`Supprimer ${label} ?`)) {
           items = items.filter((it) => it.id !== id);
           save();
           render();
           vibrate(35);
         } else {
-          c.style.transform = "";
-          c.style.opacity = "";
+          resetSwipeStyles(card);
         }
-      });
+      } else {
+        resetSwipeStyles(card);
+      }
+      onPressEnd();
+    }
 
-      // Drag & drop (ordre sur le subset visible)
-      new Sortable(list, {
-        handle: ".handle",
-        animation: 160,
-        onEnd: (evt) => {
-          const visibleIds = Array.from(list.querySelectorAll(".card")).map(
-            (c) => c.dataset.id
-          );
-          const map = new Map(visibleIds.map((id, i) => [id, i]));
-          items = items
-            .slice()
-            .sort((a, b) => {
-              const ia = map.has(a.id) ? map.get(a.id) + 0.1 : 9999 + items.indexOf(a);
-              const ib = map.has(b.id) ? map.get(b.id) + 0.1 : 9999 + items.indexOf(b);
-              return ia - ib;
-            });
-          save();
-          render();
-          vibrate();
-        },
-      });
+    function onTouchCancel() {
+      if (!swipeCard) return;
+      swipeCard.style.transition = ".18s";
+      resetSwipeStyles(swipeCard);
+      swipeMoving = false;
+      swipeCard = null;
+      onPressEnd();
     }
 
     // long-press logic
@@ -1227,6 +1339,17 @@
     function onPressEnd() {
       clearTimeout(pressTimer);
       pressTimer = null;
+    }
+
+    if (listEl) {
+      listEl.addEventListener("click", handleListClick);
+      listEl.addEventListener("pointerdown", onPressStart);
+      listEl.addEventListener("pointerup", onPressEnd);
+      listEl.addEventListener("pointercancel", onPressEnd);
+      listEl.addEventListener("touchstart", onTouchStart, { passive: true });
+      listEl.addEventListener("touchmove", onTouchMove, { passive: true });
+      listEl.addEventListener("touchend", onTouchEnd);
+      listEl.addEventListener("touchcancel", onTouchCancel);
     }
 
     /* ====== Exports ====== */
@@ -1376,8 +1499,11 @@
     }
 
     /* ====== Storage sync & Init ====== */
+    initPersistentState();
+
     window.addEventListener("storage", () => {
       items = load();
+      saveToIndexedDB(items);
       render();
     });
     render();
