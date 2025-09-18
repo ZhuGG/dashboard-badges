@@ -880,7 +880,6 @@
     function save() {
       localStorage.setItem(K, JSON.stringify(items));
       saveToIndexedDB(items);
-      window.dispatchEvent(new Event("storage"));
     }
 
     function loadStatsBaseline() {
@@ -1445,19 +1444,21 @@
 
       if (act === "del") {
         const item = items[ix];
-        const label = item?.name ? `« ${item.name} »` : "cette commande";
-        if (!confirm(`Supprimer ${label} ?`)) {
-          resetSwipeStyles(card);
-          return;
-        }
-        card.style.transform = "translateX(-110%)";
-        card.style.opacity = ".0";
-        setTimeout(() => {
-          items.splice(ix, 1);
-          save();
-          render();
-        }, 200);
-        vibrate(35);
+        requestDeletion(
+          item,
+          () => {
+            card.style.transform = "translateX(-110%)";
+            card.style.opacity = ".0";
+            setTimeout(() => {
+              items.splice(ix, 1);
+              save();
+              render();
+            }, 200);
+            vibrate(35);
+          },
+          () => resetSwipeStyles(card)
+        );
+        return;
       }
     }
 
@@ -1492,6 +1493,17 @@
       card.style.opacity = "";
     }
 
+    function requestDeletion(item, onConfirm, onCancel) {
+      const label = item?.name ? `« ${item.name} »` : "cette commande";
+      const confirmed = confirm(`Supprimer ${label} ?`);
+      if (confirmed) {
+        onConfirm?.();
+      } else {
+        onCancel?.();
+      }
+      return confirmed;
+    }
+
     function onTouchStart(e) {
       const card = e.target.closest(".card");
       if (!card) return;
@@ -1523,18 +1535,24 @@
       if (dx < -90) {
         const id = card.dataset.id;
         const item = items.find((it) => it.id === id);
-        const label = item?.name ? `« ${item.name} »` : "cette commande";
-        if (confirm(`Supprimer ${label} ?`)) {
-          items = items.filter((it) => it.id !== id);
-          save();
-          render();
-          vibrate(35);
-        } else {
-          resetSwipeStyles(card);
+        const confirmed =
+          item &&
+          requestDeletion(
+            item,
+            () => {
+              items = items.filter((it) => it.id !== id);
+              save();
+              render();
+              vibrate(35);
+            },
+            () => resetSwipeStyles(card)
+          );
+        if (confirmed) {
+          onPressEnd();
+          return;
         }
-      } else {
-        resetSwipeStyles(card);
       }
+      resetSwipeStyles(card);
       onPressEnd();
     }
 
