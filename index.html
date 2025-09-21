@@ -176,6 +176,17 @@
       background: none;
       color: inherit;
     }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
     .icon-btn {
       width: 42px;
       height: 42px;
@@ -839,61 +850,90 @@
   <!-- Add/Edit Sheet -->
   <div class="sheet" id="sheet" aria-hidden="true">
     <h3 id="sheetTitle">Nouvelle commande</h3>
-    <div class="f">
-      <input id="fClient" placeholder="Client *" required />
-      <input id="fName" placeholder="Nom du badge *" required />
+    <form class="f" id="orderForm">
+      <label class="sr-only" for="fClient">Client *</label>
+      <input id="fClient" name="fClient" placeholder="Client *" required />
+      <label class="sr-only" for="fName">Nom du badge *</label>
+      <input id="fName" name="fName" placeholder="Nom du badge *" required />
       <div class="row2">
-        <input id="fQty" type="number" min="1" placeholder="Quantité *" required />
-        <select id="fDiam" required>
-          <option value="">Diamètre / format *</option>
-          <option>28 mm</option>
-          <option>38 mm</option>
-          <option>45 mm</option>
-          <option>58 mm</option>
-          <option>89 mm</option>
-          <option>Rect. 80 × 50 mm</option>
-        </select>
+        <div>
+          <label class="sr-only" for="fQty">Quantité *</label>
+          <input
+            id="fQty"
+            name="fQty"
+            type="number"
+            min="1"
+            placeholder="Quantité *"
+            required
+          />
+        </div>
+        <div>
+          <label class="sr-only" for="fDiam">Diamètre / format *</label>
+          <select id="fDiam" name="fDiam" required>
+            <option value="">Diamètre / format *</option>
+            <option>28 mm</option>
+            <option>38 mm</option>
+            <option>45 mm</option>
+            <option>58 mm</option>
+            <option>89 mm</option>
+            <option>Rect. 80 × 50 mm</option>
+          </select>
+        </div>
       </div>
       <div class="row2">
-        <select id="fFinish" required>
-          <option value="">Finition *</option>
-          <option>Mat</option>
-          <option>Brillant</option>
-        </select>
-        <select id="fType" required>
-          <option value="">Attache *</option>
-          <option>Épingle</option>
-          <option>Aimant décoratif</option>
-          <option>Magnétique textile</option>
-          <option>Décapsuleur magnet</option>
-        </select>
+        <div>
+          <label class="sr-only" for="fFinish">Finition *</label>
+          <select id="fFinish" name="fFinish" required>
+            <option value="">Finition *</option>
+            <option>Mat</option>
+            <option>Brillant</option>
+          </select>
+        </div>
+        <div>
+          <label class="sr-only" for="fType">Attache *</label>
+          <select id="fType" name="fType" required>
+            <option value="">Attache *</option>
+            <option>Épingle</option>
+            <option>Aimant décoratif</option>
+            <option>Magnétique textile</option>
+            <option>Décapsuleur magnet</option>
+          </select>
+        </div>
       </div>
       <div class="row2">
-        <select id="fCarton" required>
-          <option value="">Carton *</option>
-          <option>Boîte A11</option>
-          <option>Boîte A12</option>
-          <option>Boîte A14</option>
-          <option>Petite boîte</option>
-        </select>
-        <select id="fStatus">
-          <option value="wait">En attente</option>
-          <option value="pause">En pause</option>
-          <option value="done">Terminée</option>
-        </select>
+        <div>
+          <label class="sr-only" for="fCarton">Carton *</label>
+          <select id="fCarton" name="fCarton" required>
+            <option value="">Carton *</option>
+            <option>Boîte A11</option>
+            <option>Boîte A12</option>
+            <option>Boîte A14</option>
+            <option>Petite boîte</option>
+          </select>
+        </div>
+        <div>
+          <label class="sr-only" for="fStatus">Statut</label>
+          <select id="fStatus" name="fStatus">
+            <option value="wait">En attente</option>
+            <option value="pause">En pause</option>
+            <option value="done">Terminée</option>
+          </select>
+        </div>
       </div>
-      <textarea id="fNote" placeholder="Note (optionnel)"></textarea>
+      <label class="sr-only" for="fNote">Note (optionnel)</label>
+      <textarea id="fNote" name="fNote" placeholder="Note (optionnel)"></textarea>
       <div class="cta">
-        <button class="btn ghost" id="cancelBtn">Annuler</button>
+        <button class="btn ghost" id="cancelBtn" type="button">Annuler</button>
         <button
           class="btn"
           id="saveBtn"
           style="background: var(--brand-gradient); color: #111; border: 0"
+          type="submit"
         >
           Enregistrer
         </button>
       </div>
-    </div>
+    </form>
   </div>
 
   <!-- Settings sheet -->
@@ -1527,21 +1567,29 @@
 
     /* ====== Add/Edit Sheet ====== */
     const sheet = $("#sheet");
+    const orderForm = $("#orderForm");
     function openSheet(edit = null) {
       editId = edit ? edit.id : null;
       $("#sheetTitle").textContent = edit ? "Modifier la commande" : "Nouvelle commande";
-      $("#fClient").value = edit ? edit.client : "";
-      $("#fName").value = edit ? edit.name : "";
-      $("#fQty").value = edit ? edit.qty : "";
-      $("#fDiam").value = edit ? edit.diam : "";
-      $("#fFinish").value = edit ? edit.finish : "";
-      $("#fType").value = edit ? edit.type : "";
-      $("#fCarton").value = edit ? edit.carton : "";
-      $("#fStatus").value = edit ? edit.status : "wait";
-      $("#fNote").value = edit ? edit.note : "";
+      if (orderForm) {
+        orderForm.reset();
+        const fields = orderForm.elements;
+        fields.fStatus.value = "wait";
+        if (edit) {
+          fields.fClient.value = edit.client || "";
+          fields.fName.value = edit.name || "";
+          fields.fQty.value = edit.qty || "";
+          fields.fDiam.value = edit.diam || "";
+          fields.fFinish.value = edit.finish || "";
+          fields.fType.value = edit.type || "";
+          fields.fCarton.value = edit.carton || "";
+          fields.fStatus.value = edit.status || "wait";
+          fields.fNote.value = edit.note || "";
+        }
+        setTimeout(() => fields.fClient?.focus(), 100);
+      }
       sheet.classList.add("open");
       sheet.setAttribute("aria-hidden", "false");
-      setTimeout(() => $("#fClient").focus(), 100);
       syncHeaderOffset();
     }
     function closeSheet() {
@@ -1560,51 +1608,55 @@
       vibrate();
     };
 
-    $("#saveBtn").onclick = () => {
-      const o = {
-        client: $("#fClient").value,
-        name: $("#fName").value,
-        qty: $("#fQty").value,
-        diam: $("#fDiam").value,
-        finish: $("#fFinish").value,
-        type: $("#fType").value,
-        carton: $("#fCarton").value,
-        status: $("#fStatus").value,
-        note: $("#fNote").value,
-      };
-      if (!o.client || !o.name || !o.qty || !o.diam || !o.finish || !o.type || !o.carton) {
-        alert("Merci de remplir tous les champs obligatoires.");
-        return;
-      }
+    if (orderForm) {
+      orderForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const fields = orderForm.elements;
+        const o = {
+          client: fields.fClient.value,
+          name: fields.fName.value,
+          qty: fields.fQty.value,
+          diam: fields.fDiam.value,
+          finish: fields.fFinish.value,
+          type: fields.fType.value,
+          carton: fields.fCarton.value,
+          status: fields.fStatus.value,
+          note: fields.fNote.value,
+        };
+        if (!o.client || !o.name || !o.qty || !o.diam || !o.finish || !o.type || !o.carton) {
+          alert("Merci de remplir tous les champs obligatoires.");
+          return;
+        }
 
-      if (editId) {
-        const ix = items.findIndex((x) => x.id === editId);
-        if (ix >= 0) {
-          const item = items[ix];
-          const prevStatus = item.status;
-          const nextStatus = o.status || "wait";
-          Object.assign(item, o);
-          enrichItemState(item);
-          item.status = prevStatus;
-          transitionStatus(item, nextStatus, now());
-          if (nextStatus === "done" && prevStatus !== "done") {
+        if (editId) {
+          const ix = items.findIndex((x) => x.id === editId);
+          if (ix >= 0) {
+            const item = items[ix];
+            const prevStatus = item.status;
+            const nextStatus = o.status || "wait";
+            Object.assign(item, o);
+            enrichItemState(item);
+            item.status = prevStatus;
+            transitionStatus(item, nextStatus, now());
+            if (nextStatus === "done" && prevStatus !== "done") {
+              confettiBurst();
+            }
+          }
+        } else {
+          const created = newItem(o);
+          items.unshift(created);
+          cardInAnimationNextRender = true;
+          transitionStatus(created, created.status, now());
+          if (created.status === "done") {
             confettiBurst();
           }
         }
-      } else {
-        const created = newItem(o);
-        items.unshift(created);
-        cardInAnimationNextRender = true;
-        transitionStatus(created, created.status, now());
-        if (created.status === "done") {
-          confettiBurst();
-        }
-      }
-      save();
-      render();
-      closeSheet();
-      vibrate();
-    };
+        save();
+        render();
+        closeSheet();
+        vibrate();
+      });
+    }
 
     /* ====== Render ====== */
     let cardInAnimationNextRender = false;
