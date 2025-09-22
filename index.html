@@ -2046,19 +2046,27 @@
         cardInAnimationNextRender = false;
       }
 
-      // live timer uniquement pour "wait"
-      liveTimer = setInterval(() => {
-        const tick = now();
-        document.querySelectorAll(".card").forEach((card) => {
-          const id = card.dataset.id;
-          const it = items.find((x) => x.id === id);
-          if (!it || it.status !== "wait") return;
-          const b = card.querySelector("[data-role='timer']");
-          if (!b) return;
-          const d = getEffectiveSeconds(it, tick);
-          b.textContent = fmtDur(d);
-        });
-      }, 1000);
+      const waitItemsMap = new Map(
+        show.filter((item) => item.status === "wait").map((item) => [item.id, item])
+      );
+
+      if (list && list.children.length && waitItemsMap.size) {
+        // live timer uniquement pour "wait"
+        liveTimer = setInterval(() => {
+          const tick = now();
+          for (let i = 0; i < list.children.length; i++) {
+            const card = list.children[i];
+            const id = card.getAttribute("data-id");
+            if (!id) continue;
+            const it = waitItemsMap.get(id);
+            if (!it) continue;
+            const timerEl = card.querySelector("[data-role='timer']");
+            if (!timerEl) continue;
+            const d = getEffectiveSeconds(it, tick);
+            timerEl.textContent = fmtDur(d);
+          }
+        }, 1000);
+      }
 
       ensureSortable();
     }
