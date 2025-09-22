@@ -229,6 +229,8 @@
       margin: 0;
       min-height: 100vh;
       font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      overflow-x: clip;
+      overscroll-behavior-x: contain;
       background:
         radial-gradient(120% 130% at 20% -10%, rgba(148, 166, 255, 0.24) 0%, transparent 55%),
         radial-gradient(120% 160% at 80% 0%, rgba(142, 250, 219, 0.18) 0%, transparent 60%),
@@ -297,7 +299,7 @@
           clamp(16px, 5vw, 24px);
       }
       .chip-row {
-        margin: 0 calc(-1 * var(--page-pad));
+        margin: 0;
         padding: 0 var(--page-pad) 4px;
       }
       .chip-row .chip {
