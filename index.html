@@ -293,8 +293,8 @@
         z-index: -1;
       }
       .topbar {
-        padding-top: calc(env(safe-area-inset-top, 0) + clamp(18px, 6vw, 28px));
-        padding-bottom: clamp(16px, 5vw, 24px);
+        padding: calc(env(safe-area-inset-top, 0) + clamp(18px, 6vw, 28px)) var(--page-pad)
+          clamp(16px, 5vw, 24px);
       }
       .chip-row {
         margin: 0 calc(-1 * var(--page-pad));
