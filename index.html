@@ -2749,14 +2749,14 @@
           <td>${escapeHtml(i.name)}</td>
           <td>${escapeHtml(i.client)}</td>
           <td style="text-align:right">${i.qty}</td>
-          <td>${i.diam}</td><td>${i.finish}</td><td>${i.type}</td><td>${i.carton}</td>
+          <td>${i.diam}</td><td>${i.finish}</td><td>${i.type}</td><td>${i.carton}</td><td>${escapeHtml(i.note || "")}</td>
           <td>${fmtDate(i.startTime)}</td><td>${fmtDate(i.endTime)}</td>
           ${durCell}
         </tr>`;
         })
         .join("");
 
-      const headCols = `<th>Nom</th><th>Client</th><th>Qté</th><th>Format</th><th>Finition</th><th>Attache</th><th>Carton</th><th>Créé</th><th>Terminé</th>${
+      const headCols = `<th>Nom</th><th>Client</th><th>Qté</th><th>Format</th><th>Finition</th><th>Attache</th><th>Carton</th><th>Note</th><th>Créé</th><th>Terminé</th>${
         withDur ? "<th>Durée</th>" : ""
       }`;
       const htmlTable = `
@@ -2774,7 +2774,16 @@
           const durLabel = withDur && durSec ? ` • Durée: ${fmtDur(durSec)}` : "";
           const endLabel = fmtDate(i.endTime);
           const endPart = endLabel !== "—" ? ` • Terminé: ${endLabel}` : "";
-          return `${idx + 1}. ${i.name} — ${i.client}\n   Qté: ${i.qty} • Format: ${i.diam} • Finition: ${i.finish} • Attache: ${i.type} • Carton: ${i.carton}\n   Créé: ${fmtDate(i.startTime)}${endPart}${durLabel}`;
+          const note = (i.note || "").trim();
+          const lines = [
+            `${idx + 1}. ${i.name} — ${i.client}`,
+            `   Qté: ${i.qty} • Format: ${i.diam} • Finition: ${i.finish} • Attache: ${i.type} • Carton: ${i.carton}`,
+            `   Créé: ${fmtDate(i.startTime)}${endPart}${durLabel}`,
+          ];
+          if (note) {
+            lines.push(`   Note: ${note}`);
+          }
+          return lines.join("\n");
         })
         .join("\n\n");
 
