@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1, maximum-scale=1"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
   />
   <title>V‑MACH • Production Badges</title>
 
@@ -109,7 +109,7 @@
       padding: var(--page-pad);
     }
     .page-grid {
-      width: min(1280px, calc(100% - 2 * var(--page-pad)));
+      width: min(1280px, 100%);
       margin: 0 auto;
       display: grid;
       grid-template-columns: minmax(0, 1fr);
@@ -132,6 +132,105 @@
       box-shadow: var(--shadow-lg);
       min-height: 0;
       padding-bottom: calc(140px + var(--safe-bottom));
+    }
+
+    @media (max-width: 720px) {
+      :root {
+        --page-pad: 20px;
+        --radius-lg: 20px;
+        --radius-md: 16px;
+        --radius-sm: 12px;
+      }
+      body {
+        padding: 0;
+      }
+      .page-grid {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        gap: 0;
+      }
+      header.page-header {
+        position: sticky;
+        top: 0;
+        border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        box-shadow: 0 18px 32px rgba(4, 8, 20, 0.55);
+      }
+      header.page-header::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: linear-gradient(185deg, rgba(7, 12, 24, 0.96), rgba(7, 12, 24, 0.7));
+        z-index: -1;
+      }
+      .topbar {
+        padding-top: calc(env(safe-area-inset-top, 0) + clamp(18px, 6vw, 28px));
+        padding-bottom: clamp(16px, 5vw, 24px);
+      }
+      .chip-row {
+        margin: 0 calc(-1 * var(--page-pad));
+        padding: 0 var(--page-pad) 4px;
+      }
+      .chip-row .chip {
+        padding: 10px 18px;
+        font-size: 0.85rem;
+      }
+      .utility {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+      .search input {
+        min-height: 46px;
+        font-size: 1rem;
+      }
+      .sort-select {
+        justify-content: space-between;
+        min-height: 46px;
+        font-size: 0.95rem;
+      }
+      .page-main {
+        border-radius: 0;
+        margin: 0;
+        padding: 22px var(--page-pad) calc(140px + var(--safe-bottom));
+      }
+      #list {
+        gap: 16px;
+      }
+      .card {
+        border-radius: var(--radius-md);
+        padding: 20px 18px 18px;
+      }
+      #insights {
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        max-height: none;
+        border-radius: 0;
+        padding: calc(env(safe-area-inset-top, 0) + 24px) var(--page-pad) calc(28px + var(--safe-bottom));
+        transform: translateY(8%) scale(0.94);
+      }
+      #insights.open {
+        transform: translateY(0) scale(1);
+      }
+      .insights__row {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      }
+      .insights__actions {
+        justify-content: center;
+      }
+      .export {
+        margin: 22px 0 8px;
+      }
+      .fab {
+        width: 64px;
+        height: 64px;
+        font-size: 30px;
+        right: var(--page-pad);
+        bottom: calc(var(--page-pad) + var(--safe-bottom));
+      }
     }
 
     header {
