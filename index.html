@@ -1327,6 +1327,8 @@
 
     let sortableInstance = null;
     let swipeStartX = 0;
+    let swipeStartY = 0;
+    let swipeIsHorizontal = false;
     let swipeMoving = false;
     let swipeCard = null;
 
@@ -2248,16 +2250,37 @@
       if (!card) return;
       swipeCard = card;
       swipeStartX = e.touches[0]?.clientX || 0;
+      swipeStartY = e.touches[0]?.clientY || 0;
+      swipeIsHorizontal = false;
       swipeMoving = true;
       card.style.transition = "";
     }
 
     function onTouchMove(e) {
       if (!swipeMoving || !swipeCard) return;
-      const touchX = e.touches[0]?.clientX;
-      if (typeof touchX !== "number") return;
+      const touch = e.touches[0];
+      const touchX = touch?.clientX;
+      const touchY = touch?.clientY;
+      if (typeof touchX !== "number" || typeof touchY !== "number") return;
       const dx = touchX - swipeStartX;
+      const dy = touchY - swipeStartY;
       if (Math.abs(dx) > 6) onPressEnd();
+
+      const verticalDominant = Math.abs(dy) > 10 && Math.abs(dy) >= Math.abs(dx);
+      if (verticalDominant) {
+        swipeIsHorizontal = false;
+        resetSwipeStyles(swipeCard);
+        return;
+      }
+
+      if (!swipeIsHorizontal) {
+        if (Math.abs(dx) > 10 && Math.abs(dx) >= Math.abs(dy)) {
+          swipeIsHorizontal = true;
+        } else {
+          return;
+        }
+      }
+
       if (dx > -10) return;
       swipeCard.style.transform = `translateX(${dx}px)`;
       swipeCard.style.opacity = String(1 - Math.min(1, Math.abs(dx) / 180));
@@ -2269,9 +2292,11 @@
       const touchX = e.changedTouches[0]?.clientX;
       const dx = (touchX ?? swipeStartX) - swipeStartX;
       swipeMoving = false;
+      const wasHorizontal = swipeIsHorizontal;
+      swipeIsHorizontal = false;
       swipeCard = null;
       card.style.transition = ".18s";
-      if (dx < -90) {
+      if (wasHorizontal && dx < -90) {
         const id = card.dataset.id;
         const item = items.find((it) => it.id === id);
         const confirmed =
@@ -2300,6 +2325,7 @@
       swipeCard.style.transition = ".18s";
       resetSwipeStyles(swipeCard);
       swipeMoving = false;
+      swipeIsHorizontal = false;
       swipeCard = null;
       onPressEnd();
     }
