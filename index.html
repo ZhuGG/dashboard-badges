@@ -1138,6 +1138,8 @@
       <div id="list"></div>
 
       <div class="export">
+        <button class="pill" id="importCsv">Importer CSV</button>
+        <input class="sr-only" type="file" id="importCsvInput" accept=".csv,text/csv" />
         <button class="pill" id="exportCsv">Export CSV</button>
         <button class="pill" id="exportEmail">Export E‑mail</button>
       </div>
@@ -2359,7 +2361,345 @@
       listEl.addEventListener("touchcancel", onTouchCancel);
     }
 
+    const CSV_REQUIRED_FIELDS = [
+      "client",
+      "name",
+      "qty",
+      "diam",
+      "finish",
+      "type",
+      "carton",
+    ];
+    const CSV_HEADER_ALIASES = {
+      client: "client",
+      name: "name",
+      nom: "name",
+      badge: "name",
+      designation: "name",
+      qty: "qty",
+      quantity: "qty",
+      quantite: "qty",
+      quantité: "qty",
+      qte: "qty",
+      qt: "qty",
+      diam: "diam",
+      diametre: "diam",
+      diamètre: "diam",
+      format: "diam",
+      finish: "finish",
+      finition: "finish",
+      type: "type",
+      attache: "type",
+      attach: "type",
+      attachment: "type",
+      carton: "carton",
+      colis: "carton",
+      boite: "carton",
+      boîte: "carton",
+      box: "carton",
+      status: "status",
+      statut: "status",
+      starttime: "startTime",
+      start: "startTime",
+      debut: "startTime",
+      début: "startTime",
+      endtime: "endTime",
+      end: "endTime",
+      fin: "endTime",
+      completion: "endTime",
+      durationsec: "durationSec",
+      duration: "durationSec",
+      duree: "durationSec",
+      durée: "durationSec",
+      note: "note",
+      commentaires: "note",
+      comment: "note",
+      activems: "activeMs",
+      activeseconds: "activeSec",
+      activetime: "activeMs",
+      tempsactif: "activeMs",
+      lastresumetime: "lastResumeTime",
+      reprise: "lastResumeTime",
+    };
+
+    function normalizeCsvHeaderKey(key) {
+      if (!key) return null;
+      const trimmed = String(key).trim();
+      if (!trimmed) return null;
+      let normalized = trimmed;
+      if (typeof normalized.normalize === "function") {
+        normalized = normalized.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      }
+      const lookup = normalized.toLowerCase().replace(/[^a-z0-9]/g, "");
+      return CSV_HEADER_ALIASES[lookup] || trimmed;
+    }
+
+    function parseCsvLine(line) {
+      const cells = [];
+      let current = "";
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (i === 0 && char === "\ufeff") continue; // strip BOM
+        if (inQuotes) {
+          if (char === "\"") {
+            if (line[i + 1] === "\"") {
+              current += "\"";
+              i++;
+            } else {
+              inQuotes = false;
+            }
+          } else {
+            current += char;
+          }
+        } else {
+          if (char === "\"") {
+            inQuotes = true;
+          } else if (char === ";") {
+            cells.push(current);
+            current = "";
+          } else if (char === "\r") {
+            continue;
+          } else {
+            current += char;
+          }
+        }
+      }
+      cells.push(current);
+      return cells;
+    }
+
+    function parseCsvContent(text) {
+      if (typeof text !== "string" || !text.trim()) {
+        throw new Error("Fichier CSV vide.");
+      }
+      const rawLines = text.split(/\r?\n/);
+      while (rawLines.length && !rawLines[0].trim()) {
+        rawLines.shift();
+      }
+      if (!rawLines.length) {
+        throw new Error("Fichier CSV vide.");
+      }
+      let headerLine = rawLines.shift();
+      if (!headerLine || !headerLine.trim()) {
+        throw new Error("Ligne d'en-tête manquante.");
+      }
+      const headerCells = parseCsvLine(headerLine);
+      if (!headerCells.length) {
+        throw new Error("Ligne d'en-tête invalide.");
+      }
+      const headerInfo = headerCells.map((cell) => {
+        const canonical = normalizeCsvHeaderKey(cell);
+        return { original: cell, canonical };
+      });
+      const canonicalHeader = headerInfo
+        .map((info) => info.canonical)
+        .filter((key) => !!key);
+      const missing = CSV_REQUIRED_FIELDS.filter((field) => !canonicalHeader.includes(field));
+      if (missing.length) {
+        throw new Error(
+          `Colonnes manquantes : ${missing.join(", ")}`
+        );
+      }
+      const entries = [];
+      rawLines.forEach((line, idx) => {
+        if (!line || !line.trim()) return;
+        const values = parseCsvLine(line);
+        if (values.length === 1 && !values[0].trim()) return;
+        if (values.length !== headerCells.length) {
+          throw new Error(
+            `Ligne ${idx + 2} : nombre de colonnes inattendu (${values.length} au lieu de ${headerCells.length}).`
+          );
+        }
+        const record = {};
+        headerInfo.forEach((info, col) => {
+          if (!info.canonical) return;
+          record[info.canonical] = (values[col] ?? "").trim();
+        });
+        entries.push({ data: record, lineNumber: idx + 2 });
+      });
+      return entries;
+    }
+
+    function normalizeStatusValue(raw) {
+      if (!raw && raw !== 0) return "wait";
+      const txt = String(raw)
+        .trim()
+        .toLowerCase();
+      if (["done", "terminee", "terminée", "complete", "completed"].includes(txt)) return "done";
+      if (["pause", "paused", "en pause"].includes(txt)) return "pause";
+      if (["wait", "waiting", "attente", "en attente"].includes(txt)) return "wait";
+      return "wait";
+    }
+
+    function parsePositiveInteger(value, lineNumber, fieldLabel) {
+      const normalized = String(value ?? "")
+        .trim()
+        .replace(/\s+/g, "")
+        .replace(/,/g, ".");
+      const num = Number(normalized);
+      if (!Number.isFinite(num) || num <= 0) {
+        throw new Error(`Ligne ${lineNumber} : ${fieldLabel} invalide.`);
+      }
+      return Math.max(1, Math.round(num));
+    }
+
+    function parseOptionalNumber(value, lineNumber, fieldLabel) {
+      if (value === undefined || value === null) return null;
+      const str = String(value).trim();
+      if (!str) return null;
+      const normalized = str.replace(/\s+/g, "").replace(/,/g, ".");
+      const num = Number(normalized);
+      if (!Number.isFinite(num)) {
+        throw new Error(`Ligne ${lineNumber} : ${fieldLabel} invalide.`);
+      }
+      return num;
+    }
+
+    function parseOptionalTimestamp(value, lineNumber, fieldLabel) {
+      if (value === undefined || value === null) return null;
+      const str = String(value).trim();
+      if (!str) return null;
+      const asNumber = Number(str);
+      if (Number.isFinite(asNumber)) return asNumber;
+      const parsed = Date.parse(str);
+      if (!Number.isNaN(parsed)) return parsed;
+      throw new Error(`Ligne ${lineNumber} : ${fieldLabel} invalide.`);
+    }
+
+    function generateItemId() {
+      return String(Date.now()) + Math.random().toString(16).slice(2);
+    }
+
+    function recordToItem(record, lineNumber) {
+      const client = (record.client || "").trim();
+      const name = (record.name || "").trim();
+      const diam = (record.diam || "").trim();
+      const finish = (record.finish || "").trim();
+      const type = (record.type || "").trim();
+      const carton = (record.carton || "").trim();
+      if (!client || !name || !diam || !finish || !type || !carton) {
+        throw new Error(`Ligne ${lineNumber} : valeurs obligatoires manquantes.`);
+      }
+      const qty = parsePositiveInteger(record.qty, lineNumber, "quantité");
+      const targetStatus = normalizeStatusValue(record.status);
+      const durationSecRaw = parseOptionalNumber(record.durationSec, lineNumber, "durée (secondes)");
+      const durationSec = Number.isFinite(durationSecRaw) ? Math.max(0, Math.round(durationSecRaw)) : 0;
+      const activeMsRaw = parseOptionalNumber(record.activeMs, lineNumber, "temps actif (ms)");
+      const activeSecRaw = parseOptionalNumber(record.activeSec, lineNumber, "temps actif (s)");
+      const activeMs = Number.isFinite(activeMsRaw)
+        ? Math.max(0, Math.round(activeMsRaw))
+        : Number.isFinite(activeSecRaw)
+        ? Math.max(0, Math.round(activeSecRaw * 1000))
+        : null;
+      const startTime = parseOptionalTimestamp(record.startTime, lineNumber, "début");
+      const endTime = parseOptionalTimestamp(record.endTime, lineNumber, "fin");
+      const lastResumeTime = parseOptionalTimestamp(record.lastResumeTime, lineNumber, "reprise");
+      const item = {
+        id: generateItemId(),
+        client,
+        name,
+        qty,
+        diam,
+        finish,
+        type,
+        carton,
+        status: "wait",
+        note: (record.note || "").trim(),
+        startTime: startTime ?? now(),
+        endTime: endTime ?? null,
+        durationSec,
+        activeMs:
+          Number.isFinite(activeMs) && activeMs >= 0
+            ? activeMs
+            : durationSec > 0
+            ? durationSec * 1000
+            : 0,
+        lastResumeTime: Number.isFinite(lastResumeTime) ? lastResumeTime : null,
+      };
+      enrichItemState(item);
+      const transitionTs = Number.isFinite(endTime)
+        ? endTime
+        : targetStatus === "wait"
+        ? item.lastResumeTime || item.startTime
+        : item.startTime;
+      transitionStatus(item, targetStatus, Number.isFinite(transitionTs) ? transitionTs : now());
+      return item;
+    }
+
+    function importedItemKey(item) {
+      return [item.client, item.name, item.diam, item.finish, item.type, item.carton]
+        .map((val) => String(val || "").trim().toLowerCase())
+        .join("‖");
+    }
+
+    function mergeImportedItems(existing, imported) {
+      if (!Array.isArray(existing) || !existing.length) {
+        return imported.slice();
+      }
+      const result = existing.slice();
+      const indexByKey = new Map();
+      result.forEach((item, idx) => {
+        indexByKey.set(importedItemKey(item), idx);
+      });
+      imported.forEach((item) => {
+        const key = importedItemKey(item);
+        if (indexByKey.has(key)) {
+          const idx = indexByKey.get(key);
+          const preservedId = result[idx] ? result[idx].id : item.id;
+          result[idx] = Object.assign({}, item, { id: preservedId || item.id });
+        } else {
+          result.push(item);
+        }
+      });
+      return result;
+    }
+
+    async function handleCsvImportChange(event) {
+      const input = event.target;
+      const file = input?.files?.[0];
+      if (!file) return;
+      try {
+        const content = await file.text();
+        const records = parseCsvContent(content);
+        if (!records.length) {
+          throw new Error("Aucune donnée trouvée dans le fichier.");
+        }
+        const importedItems = records.map((entry) => recordToItem(entry.data, entry.lineNumber));
+        const replaceAll =
+          !items.length ||
+          confirm(
+            "Remplacer les commandes existantes par celles du fichier importé ?\nOK = remplacer complètement, Annuler = fusionner avec les commandes existantes."
+          );
+        const nextItems = replaceAll ? importedItems : mergeImportedItems(items, importedItems);
+        items = nextItems;
+        save();
+        render();
+        vibrate();
+        alert(
+          `Import terminé : ${importedItems.length} commande${importedItems.length > 1 ? "s" : ""}.`
+        );
+      } catch (err) {
+        console.error("Import CSV invalide", err);
+        const message = err && err.message ? err.message : "Impossible de traiter le fichier.";
+        alert(`Import CSV impossible : ${message}`);
+      } finally {
+        if (input) input.value = "";
+      }
+    }
+
     /* ====== Exports ====== */
+    const importBtn = $("#importCsv");
+    const importInput = $("#importCsvInput");
+    if (importBtn && importInput) {
+      importBtn.addEventListener("click", () => {
+        importInput.value = "";
+        importInput.click();
+        vibrate();
+      });
+      importInput.addEventListener("change", handleCsvImportChange);
+    }
+
     $("#exportCsv").onclick = () => {
       if (!items.length) return;
       const rows = items.map(({ id, ...c }) => ({
