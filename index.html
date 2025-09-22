@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="aurora">
+<html lang="fr" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta
@@ -26,6 +26,16 @@
   <style>
 
     :root {
+      --radius-lg: 24px;
+      --radius-md: 18px;
+      --radius-sm: 12px;
+      --touch: 52px;
+      --safe-bottom: env(safe-area-inset-bottom, 18px);
+      --header-h: 208px;
+      --page-pad: clamp(18px, 4vw, 48px);
+      font-size: 16px;
+    }
+    [data-theme="dark"] {
       color-scheme: dark;
       --bg: #030611;
       --bg-alt: #050a16;
@@ -44,54 +54,26 @@
       --brand-gradient: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
       --shadow-lg: 0 24px 46px rgba(4, 8, 20, 0.55);
       --shadow-md: 0 14px 32px rgba(5, 10, 25, 0.45);
-      --radius-lg: 24px;
-      --radius-md: 18px;
-      --radius-sm: 12px;
-      --touch: 52px;
-      --safe-bottom: env(safe-area-inset-bottom, 18px);
-      --header-h: 208px;
-      --page-pad: clamp(18px, 4vw, 48px);
-      font-size: 16px;
     }
-    [data-theme="aurora"] {
-      --accent: #8efadb;
-      --accent-2: #94a6ff;
-      --surface: rgba(10, 21, 36, 0.92);
-      --surface-strong: #0d1630;
-      --surface-soft: rgba(16, 30, 52, 0.8);
-      --stroke: rgba(142, 250, 219, 0.2);
-    }
-    [data-theme="sunset"] {
-      --accent: #ffb56b;
-      --accent-2: #ff6f91;
-      --surface: rgba(38, 16, 25, 0.92);
-      --surface-strong: #2a0f1d;
-      --surface-soft: rgba(46, 18, 30, 0.78);
-      --stroke: rgba(255, 158, 140, 0.24);
-    }
-    [data-theme="ocean"] {
-      --accent: #74e0ff;
-      --accent-2: #4d9dff;
-      --surface: rgba(10, 26, 42, 0.92);
-      --surface-strong: #0a1d30;
-      --surface-soft: rgba(12, 32, 48, 0.78);
-      --stroke: rgba(104, 188, 255, 0.24);
-    }
-    [data-theme="forest"] {
-      --accent: #41e4a0;
-      --accent-2: #7fffd4;
-      --surface: rgba(12, 30, 24, 0.92);
-      --surface-strong: #0f261e;
-      --surface-soft: rgba(14, 36, 28, 0.78);
-      --stroke: rgba(107, 234, 180, 0.24);
-    }
-    [data-theme="classic"] {
-      --accent: #6ab8ff;
-      --accent-2: #7cddc4;
-      --surface: rgba(16, 23, 38, 0.92);
-      --surface-strong: #122038;
-      --surface-soft: rgba(20, 32, 52, 0.78);
-      --stroke: rgba(116, 170, 255, 0.22);
+    [data-theme="light"] {
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --bg-alt: #ffffff;
+      --surface: rgba(255, 255, 255, 0.92);
+      --surface-strong: #ffffff;
+      --surface-soft: rgba(241, 245, 255, 0.78);
+      --stroke: rgba(118, 140, 198, 0.18);
+      --text: #1e293b;
+      --muted: #5f6c80;
+      --accent: #2f7bff;
+      --accent-2: #2ac6a8;
+      --accent-soft: rgba(47, 123, 255, 0.16);
+      --warn: #d9941a;
+      --danger: #d64562;
+      --ok: #2eaf70;
+      --brand-gradient: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      --shadow-lg: 0 24px 40px rgba(15, 35, 95, 0.12);
+      --shadow-md: 0 14px 28px rgba(18, 36, 90, 0.1);
     }
 
     * {
@@ -1146,11 +1128,8 @@
 
       <h4 style="margin: 8px 2px">Thème</h4>
       <div class="theme-grid" id="themes">
-        <button class="ghost-small" data-theme="aurora" title="Aurora">Aurora</button>
-        <button class="ghost-small" data-theme="sunset" title="Sunset">Sunset</button>
-        <button class="ghost-small" data-theme="ocean" title="Ocean">Ocean</button>
-        <button class="ghost-small" data-theme="forest" title="Forest">Forest</button>
-        <button class="ghost-small" data-theme="classic" title="Classic">Classic</button>
+        <button class="ghost-small" data-theme="light" title="Light">Light</button>
+        <button class="ghost-small" data-theme="dark" title="Dark">Dark</button>
       </div>
 
       <div class="cta">
@@ -1169,6 +1148,16 @@
     const P = "vmach_prefs_v1";
     const THEME = "vmach_theme";
     const STATS_BASE = "vmach_stats_baseline_v1";
+    const DEFAULT_THEME = "dark";
+
+    function isValidTheme(value) {
+      return value === "light" || value === "dark";
+    }
+
+    function resolveTheme(value) {
+      return isValidTheme(value) ? value : DEFAULT_THEME;
+    }
+
     let items = load();
     let statsBaseline = loadStatsBaseline();
     let lastStats = {
@@ -1597,9 +1586,13 @@
 
     /* ====== Theme & Settings ====== */
     (function initTheme() {
-      const t = localStorage.getItem(THEME) || "aurora";
-      document.documentElement.setAttribute("data-theme", t);
-      markThemeActive(t);
+      const stored = localStorage.getItem(THEME);
+      const theme = resolveTheme(stored);
+      if (stored !== theme) {
+        localStorage.setItem(THEME, theme);
+      }
+      document.documentElement.setAttribute("data-theme", theme);
+      markThemeActive(theme);
     })();
 
     function markThemeActive(t) {
@@ -1609,7 +1602,7 @@
     }
     $("#themes").addEventListener("click", (e) => {
       const t = e.target?.dataset?.theme;
-      if (!t) return;
+      if (!isValidTheme(t)) return;
       document.documentElement.setAttribute("data-theme", t);
       localStorage.setItem(THEME, t);
       markThemeActive(t);
