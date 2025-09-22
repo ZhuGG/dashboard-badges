@@ -50,6 +50,7 @@
       --touch: 52px;
       --safe-bottom: env(safe-area-inset-bottom, 18px);
       --header-h: 208px;
+      --page-pad: clamp(18px, 4vw, 48px);
       font-size: 16px;
     }
     [data-theme="aurora"] {
@@ -105,36 +106,59 @@
         radial-gradient(120% 160% at 80% 0%, rgba(142, 250, 219, 0.18) 0%, transparent 60%),
         linear-gradient(180deg, var(--bg) 0%, var(--bg-alt) 100%);
       color: var(--text);
+      padding: var(--page-pad);
     }
-    main {
-      max-width: 520px;
+    .page-grid {
+      width: min(1280px, calc(100% - 2 * var(--page-pad)));
       margin: 0 auto;
-      padding: calc(var(--header-h) + 16px) 18px calc(140px + var(--safe-bottom));
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        "header"
+        "list";
+      gap: clamp(18px, 3.5vw, 36px);
+      align-items: start;
+    }
+    .page-main {
+      grid-area: list;
+      display: grid;
+      gap: clamp(18px, 3vw, 28px);
+      padding: clamp(22px, 3.5vw, 32px);
+      border-radius: var(--radius-lg);
+      background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 85%),
+        var(--surface);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: var(--shadow-lg);
+      min-height: 0;
+      padding-bottom: calc(140px + var(--safe-bottom));
     }
 
     header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 60;
-      backdrop-filter: blur(20px) saturate(150%);
+      grid-area: header;
+      position: relative;
+      inset: auto;
+      z-index: 40;
+      align-self: start;
+      backdrop-filter: blur(22px) saturate(150%);
       background:
-        linear-gradient(180deg, rgba(7, 12, 24, 0.92) 0%, rgba(7, 12, 24, 0.66) 100%);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      box-shadow: 0 22px 48px rgba(5, 10, 25, 0.55);
+        linear-gradient(185deg, rgba(7, 12, 24, 0.94) 0%, rgba(7, 12, 24, 0.66) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
     }
     .topbar {
-      max-width: 520px;
-      margin: 0 auto;
-      padding: 18px 18px 10px;
+      margin: 0;
+      padding: clamp(18px, 3vw, 28px) clamp(18px, 3vw, 28px) clamp(14px, 2.5vw, 22px);
       display: grid;
-      gap: 12px;
+      gap: clamp(12px, 2vw, 18px);
     }
     .topbar__head {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 14px;
+      flex-wrap: wrap;
     }
     .brand {
       display: flex;
@@ -288,27 +312,29 @@
     }
 
     #insights {
+      grid-area: insights;
       position: fixed;
-      top: calc(var(--header-h) + 12px);
-      right: 18px;
-      left: auto;
-      max-width: min(360px, calc(100% - 36px));
-      padding: 16px 18px 20px;
+      top: calc(var(--page-pad) + 72px);
+      left: 50%;
+      width: min(420px, calc(100% - 2 * var(--page-pad)));
+      padding: 20px clamp(18px, 3vw, 24px) 24px;
       border-radius: var(--radius-lg);
       background:
         linear-gradient(165deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
       border: 1px solid rgba(255, 255, 255, 0.12);
       box-shadow: var(--shadow-lg);
-      transform-origin: top right;
-      transform: scale(0.92);
+      transform-origin: top center;
+      transform: translate(-50%, -6%) scale(0.92);
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.22s ease, transform 0.22s ease;
       z-index: 70;
+      max-height: calc(100vh - 2 * var(--page-pad));
+      overflow: auto;
     }
     #insights.open {
       opacity: 1;
-      transform: scale(1);
+      transform: translate(-50%, 0) scale(1);
       pointer-events: auto;
     }
     .insights__head {
@@ -324,8 +350,8 @@
     }
     .insights__row {
       display: grid;
-      gap: 12px;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: clamp(12px, 2vw, 18px);
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     }
     .insight-card {
       padding: 14px 16px 16px;
@@ -414,9 +440,9 @@
     }
 
     #list {
-      margin-top: 6px;
+      margin-top: 0;
       display: grid;
-      gap: 14px;
+      gap: clamp(12px, 2vw, 18px);
     }
     .card {
       background:
@@ -585,8 +611,8 @@
 
     .fab {
       position: fixed;
-      right: 20px;
-      bottom: calc(24px + var(--safe-bottom));
+      right: max(20px, var(--page-pad));
+      bottom: calc(var(--page-pad) + var(--safe-bottom));
       width: 68px;
       height: 68px;
       border-radius: 50%;
@@ -705,28 +731,79 @@
     }
 
     @media (min-width: 600px) {
-      header,
       .sheet,
       .settings {
         border-radius: 26px;
       }
-      header {
-        top: 12px;
-        left: 50%;
-        right: auto;
-        transform: translateX(-50%);
-        width: min(520px, calc(100% - 24px));
-        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    @media (min-width: 768px) {
+      .page-grid {
+        grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+        grid-template-areas:
+          "header header"
+          "list insights";
       }
-      main {
-        padding-top: calc(var(--header-h) + 36px);
+      header {
+        position: sticky;
+        top: var(--page-pad);
+      }
+      #insights {
+        position: sticky;
+        top: var(--page-pad);
+        left: auto;
+        width: 100%;
+        max-height: none;
+        transform: none;
+        opacity: 1;
+        pointer-events: auto;
+        box-shadow: var(--shadow-lg);
+        overflow: visible;
+        align-self: start;
+      }
+      #insights.open {
+        transform: none;
+      }
+      .insights__actions {
+        justify-content: flex-start;
+      }
+      #insightToggle {
+        display: none;
+      }
+      #closeInsights {
+        display: none;
+      }
+      .page-main {
+        padding-bottom: clamp(160px, 18vh, 220px);
+      }
+      #list {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+    }
+
+    @media (min-width: 1280px) {
+      .page-grid {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(320px, 0.85fr);
+        grid-template-areas:
+          "header header insights"
+          "list list insights";
+      }
+      .insights__row {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      }
+      .insight-card--wide {
+        grid-column: span 2;
+      }
+      #list {
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       }
     }
 
   </style>
 </head>
 <body>
-  <header>
+  <div class="page-grid">
+    <header class="page-header">
     <div class="topbar">
       <div class="topbar__head">
         <div class="brand">
@@ -780,69 +857,70 @@
         </label>
       </div>
     </div>
-  </header>
+    </header>
 
-  <div id="insights" aria-hidden="true">
-    <div class="insights__head">
-      <strong>Compteurs</strong>
-      <button class="ghost-small" id="closeInsights" type="button" title="Fermer les compteurs">✕</button>
-    </div>
-    <div class="insights__row">
-      <div class="insight-card">
-        <span>Badges fabriqués</span>
-        <strong id="insightBadges">0</strong>
-        <small>Depuis la dernière remise à zéro</small>
+    <aside id="insights" class="insights-panel" aria-hidden="true">
+      <div class="insights__head">
+        <strong>Compteurs</strong>
+        <button class="ghost-small" id="closeInsights" type="button" title="Fermer les compteurs">✕</button>
       </div>
-      <div class="insight-card">
-        <span>Total commandes</span>
-        <strong id="insightOrders">0</strong>
-        <small>Commandes enregistrées</small>
-      </div>
-      <div class="insight-card">
-        <span>En cours</span>
-        <strong id="insightWaiting">0</strong>
-        <small>Commandes actives</small>
-      </div>
-      <div class="insight-card">
-        <span>En pause</span>
-        <strong id="insightPaused">0</strong>
-        <small>Temporisées</small>
-      </div>
-      <div class="insight-card insight-card--wide">
-        <span>Durée moyenne (terminées)</span>
-        <strong id="insightAvg">—</strong>
-        <small id="insightAvgDetail">Aucune commande terminée</small>
-      </div>
-      <div class="insight-card insight-card--wide">
-        <span>Temps actif cumulé</span>
-        <strong id="insightActive">—</strong>
-        <div class="insight-progress" aria-hidden="true">
-          <div class="insight-progress__bar" id="insightCompletionBar"></div>
+      <div class="insights__row">
+        <div class="insight-card">
+          <span>Badges fabriqués</span>
+          <strong id="insightBadges">0</strong>
+          <small>Depuis la dernière remise à zéro</small>
         </div>
-        <small>
-          <b id="insightDoneCount">0</b> terminées • <span id="insightCompletionLabel">0%</span> de progression
-        </small>
+        <div class="insight-card">
+          <span>Total commandes</span>
+          <strong id="insightOrders">0</strong>
+          <small>Commandes enregistrées</small>
+        </div>
+        <div class="insight-card">
+          <span>En cours</span>
+          <strong id="insightWaiting">0</strong>
+          <small>Commandes actives</small>
+        </div>
+        <div class="insight-card">
+          <span>En pause</span>
+          <strong id="insightPaused">0</strong>
+          <small>Temporisées</small>
+        </div>
+        <div class="insight-card insight-card--wide">
+          <span>Durée moyenne (terminées)</span>
+          <strong id="insightAvg">—</strong>
+          <small id="insightAvgDetail">Aucune commande terminée</small>
+        </div>
+        <div class="insight-card insight-card--wide">
+          <span>Temps actif cumulé</span>
+          <strong id="insightActive">—</strong>
+          <div class="insight-progress" aria-hidden="true">
+            <div class="insight-progress__bar" id="insightCompletionBar"></div>
+          </div>
+          <small>
+            <b id="insightDoneCount">0</b> terminées • <span id="insightCompletionLabel">0%</span> de progression
+          </small>
+        </div>
       </div>
-    </div>
-    <div class="insights__actions">
-      <button class="ghost-small" id="resetInsights" type="button" title="Réinitialiser les compteurs">
-        Réinitialiser
-      </button>
-    </div>
+      <div class="insights__actions">
+        <button class="ghost-small" id="resetInsights" type="button" title="Réinitialiser les compteurs">
+          Réinitialiser
+        </button>
+      </div>
+    </aside>
+
+    <main class="page-main">
+      <div id="emptyState" class="empty-state" hidden>
+        <strong>Aucune commande</strong>
+        Ajoutez votre première commande pour démarrer la production.
+      </div>
+      <div id="list"></div>
+
+      <div class="export">
+        <button class="pill" id="exportCsv">Export CSV</button>
+        <button class="pill" id="exportEmail">Export E‑mail</button>
+      </div>
+    </main>
   </div>
-
-  <main>
-    <div id="emptyState" class="empty-state" hidden>
-      <strong>Aucune commande</strong>
-      Ajoutez votre première commande pour démarrer la production.
-    </div>
-    <div id="list"></div>
-
-    <div class="export">
-      <button class="pill" id="exportCsv">Export CSV</button>
-      <button class="pill" id="exportEmail">Export E‑mail</button>
-    </div>
-  </main>
 
   <button class="fab" id="fab" title="Ajouter">＋</button>
   <canvas class="confetti" id="confetti" width="0" height="0" hidden></canvas>
@@ -1499,18 +1577,23 @@
     const insightToggleBtn = $("#insightToggle");
     const closeInsightsBtn = $("#closeInsights");
     const resetInsightsBtn = $("#resetInsights");
+    const insightsAutoOpenMq =
+      typeof window.matchMedia === "function" ? window.matchMedia("(min-width: 768px)") : null;
 
     function setInsightsOpen(open) {
       if (!insightPanel) return;
-      insightPanel.classList.toggle("open", open);
-      insightPanel.setAttribute("aria-hidden", String(!open));
+      const forceOpen = insightsAutoOpenMq?.matches ?? false;
+      const nextOpen = forceOpen || !!open;
+      insightPanel.classList.toggle("open", nextOpen);
+      insightPanel.setAttribute("aria-hidden", String(!nextOpen));
       if (insightToggleBtn) {
-        insightToggleBtn.setAttribute("aria-expanded", String(open));
+        insightToggleBtn.setAttribute("aria-expanded", String(nextOpen));
       }
     }
 
     if (insightToggleBtn && insightPanel) {
       insightToggleBtn.addEventListener("click", () => {
+        if (insightsAutoOpenMq?.matches) return;
         const isOpen = insightPanel.classList.contains("open");
         setInsightsOpen(!isOpen);
         vibrate();
@@ -1518,6 +1601,7 @@
     }
     if (closeInsightsBtn) {
       closeInsightsBtn.addEventListener("click", () => {
+        if (insightsAutoOpenMq?.matches) return;
         setInsightsOpen(false);
         vibrate();
       });
@@ -1531,16 +1615,29 @@
       });
     }
     document.addEventListener("keydown", (e) => {
+      if (insightsAutoOpenMq?.matches) return;
       if (e.key === "Escape") setInsightsOpen(false);
     });
     document.addEventListener("click", (e) => {
+      if (insightsAutoOpenMq?.matches) return;
       if (!insightPanel?.classList.contains("open")) return;
       if (insightPanel.contains(e.target)) return;
       if (insightToggleBtn?.contains(e.target)) return;
       setInsightsOpen(false);
     });
 
-    setInsightsOpen(false);
+    if (insightsAutoOpenMq) {
+      const handleMqChange = (event) => {
+        setInsightsOpen(event.matches);
+      };
+      if (typeof insightsAutoOpenMq.addEventListener === "function") {
+        insightsAutoOpenMq.addEventListener("change", handleMqChange);
+      } else if (typeof insightsAutoOpenMq.addListener === "function") {
+        insightsAutoOpenMq.addListener(handleMqChange);
+      }
+    }
+
+    setInsightsOpen(insightsAutoOpenMq?.matches ?? false);
     updateInsightsDisplay();
 
     /* ====== Filters, search, sort ====== */
