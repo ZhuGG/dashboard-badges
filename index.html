@@ -92,6 +92,15 @@
       --brand-gradient: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
       --shadow-lg: 0 24px 46px rgba(4, 8, 20, 0.55);
       --shadow-md: 0 14px 32px rgba(5, 10, 25, 0.45);
+      --header-bg: linear-gradient(185deg, rgba(7, 12, 24, 0.94) 0%, rgba(7, 12, 24, 0.66) 100%);
+      --header-border: rgba(255, 255, 255, 0.08);
+      --header-shadow: 0 24px 46px rgba(4, 8, 20, 0.55);
+      --header-sticky-shadow: 0 18px 32px rgba(4, 8, 20, 0.55);
+      --header-overlay: linear-gradient(185deg, rgba(7, 12, 24, 0.96), rgba(7, 12, 24, 0.7));
+      --header-icon-bg: linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.02) 100%),
+        var(--surface);
+      --header-icon-border: rgba(255, 255, 255, 0.12);
+      --header-icon-shadow: 0 10px 26px rgba(6, 12, 24, 0.45);
     }
     [data-theme="light"] {
       color-scheme: light;
@@ -150,6 +159,15 @@
       --brand-gradient: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
       --shadow-lg: 0 24px 40px rgba(15, 35, 95, 0.12);
       --shadow-md: 0 14px 28px rgba(18, 36, 90, 0.1);
+      --header-bg: linear-gradient(185deg, rgba(255, 255, 255, 0.95) 0%, rgba(232, 239, 255, 0.88) 100%);
+      --header-border: rgba(30, 41, 59, 0.12);
+      --header-shadow: 0 24px 36px rgba(15, 35, 95, 0.15);
+      --header-sticky-shadow: 0 18px 24px rgba(15, 35, 95, 0.14);
+      --header-overlay: linear-gradient(185deg, rgba(255, 255, 255, 0.96), rgba(232, 239, 255, 0.78));
+      --header-icon-bg: linear-gradient(145deg, rgba(255, 255, 255, 0.96) 0%, rgba(232, 239, 255, 0.8) 100%),
+        var(--surface);
+      --header-icon-border: rgba(30, 41, 59, 0.16);
+      --header-icon-shadow: 0 12px 24px rgba(15, 35, 95, 0.15);
     }
 
     * {
@@ -212,14 +230,14 @@
         position: sticky;
         top: 0;
         border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-        box-shadow: 0 18px 32px rgba(4, 8, 20, 0.55);
+        box-shadow: var(--header-sticky-shadow);
       }
       header.page-header::before {
         content: "";
         position: absolute;
         inset: 0;
         border-radius: inherit;
-        background: linear-gradient(185deg, rgba(7, 12, 24, 0.96), rgba(7, 12, 24, 0.7));
+        background: var(--header-overlay);
         z-index: -1;
       }
       .topbar {
@@ -298,11 +316,10 @@
       z-index: 40;
       align-self: start;
       backdrop-filter: blur(22px) saturate(150%);
-      background:
-        linear-gradient(185deg, rgba(7, 12, 24, 0.94) 0%, rgba(7, 12, 24, 0.66) 100%);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--header-bg);
+      border: 1px solid var(--header-border);
       border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-lg);
+      box-shadow: var(--header-shadow);
     }
     .topbar {
       margin: 0;
@@ -375,11 +392,9 @@
       display: grid;
       place-items: center;
       color: var(--text);
-      background:
-        linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.02) 100%),
-        var(--surface);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 10px 26px rgba(6, 12, 24, 0.45);
+      background: var(--header-icon-bg);
+      border: 1px solid var(--header-icon-border);
+      box-shadow: var(--header-icon-shadow);
     }
     .icon-btn:active {
       transform: translateY(1px) scale(0.98);
