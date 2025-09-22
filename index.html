@@ -373,6 +373,17 @@
       border-radius: var(--radius-lg);
       box-shadow: var(--header-shadow);
     }
+    @supports not ((backdrop-filter: blur(0)) or (-webkit-backdrop-filter: blur(0))) {
+      header {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        background: var(--surface-strong);
+      }
+      header.page-header::before {
+        display: none;
+        background: var(--surface-strong);
+      }
+    }
     .topbar {
       margin: 0;
       padding: clamp(18px, 3vw, 28px) clamp(18px, 3vw, 28px) clamp(14px, 2.5vw, 22px);
