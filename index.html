@@ -2012,6 +2012,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+  <script type="module" src="./parse-batch-csv.js"></script>
   <script>
     /* ====== State & Utils ====== */
     const K = "vmach_badges_v1";
@@ -2697,6 +2698,43 @@
         d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
       );
     }
+    function fmtShortDate(ts) {
+      if (!ts) return "—";
+      const d = new Date(ts);
+      if (Number.isNaN(d.getTime())) return "—";
+      return d.toLocaleDateString("fr-FR");
+    }
+    function parseDeadlineValue(value) {
+      if (value instanceof Date && !Number.isNaN(value.getTime())) {
+        return value.getTime();
+      }
+      const num = Number(value);
+      if (Number.isFinite(num) && num > 0) {
+        return num;
+      }
+      if (typeof value !== "string") return null;
+      const trimmed = value.trim();
+      if (!trimmed) return null;
+      const iso = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (iso) {
+        const [, year, month, day] = iso;
+        return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
+      }
+      const full = trimmed.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (full) {
+        const [, day, month, year] = full;
+        return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
+      }
+      const short = trimmed.match(/^(\d{2})\/(\d{2})$/);
+      if (short) {
+        const [, day, month] = short;
+        const currentYear = new Date().getFullYear();
+        return new Date(currentYear, Number(month) - 1, Number(day)).getTime();
+      }
+      const parsed = Date.parse(trimmed);
+      if (!Number.isNaN(parsed)) return parsed;
+      return null;
+    }
     function fmtDur(s) {
       if (!s || s < 1) return "—";
       const h = Math.floor(s / 3600),
@@ -2737,6 +2775,10 @@
       if (!item || typeof item !== "object") return item;
       if (!item.startTime) {
         item.startTime = now();
+      }
+      if ("deadline" in item) {
+        const parsedDeadline = parseDeadlineValue(item.deadline);
+        item.deadline = parsedDeadline;
       }
       ensureTimerFields(item);
       if (item.status === "done") {
@@ -2824,6 +2866,7 @@
         finish: o.finish,
         type: o.type,
         carton: o.carton,
+        deadline: parseDeadlineValue(o.deadline),
         status,
         note: (o.note || "").trim(),
         startTime: start,
@@ -3479,7 +3522,11 @@
           " " +
           i.type +
           " " +
-          i.carton
+          (i.carton || "") +
+          " " +
+          (i.note || "") +
+          " " +
+          (i.deadline ? fmtShortDate(i.deadline) : "")
         ).toLowerCase();
         return s.includes(search);
       });
@@ -3515,6 +3562,11 @@
               <span>Qté : <b>${i.qty}</b></span>
               <span>${i.diam}</span><span>${i.finish}</span><span>${i.type}</span><span>${i.carton}</span>
             </div>
+            ${
+              i.deadline
+                ? `<div class="meta"><span>Échéance : <b>${fmtShortDate(i.deadline)}</b></span></div>`
+                : ""
+            }
             <div class="meta">
               <span>Créé : ${fmtDate(i.startTime)}</span>
               ${
@@ -3837,6 +3889,9 @@
       boite: "carton",
       boîte: "carton",
       box: "carton",
+      deadline: "deadline",
+      echeance: "deadline",
+      due: "deadline",
       status: "status",
       statut: "status",
       starttime: "startTime",
@@ -4035,6 +4090,7 @@
       const startTime = parseOptionalTimestamp(record.startTime, lineNumber, "début");
       const endTime = parseOptionalTimestamp(record.endTime, lineNumber, "fin");
       const lastResumeTime = parseOptionalTimestamp(record.lastResumeTime, lineNumber, "reprise");
+      const deadline = parseDeadlineValue(record.deadline);
       const item = {
         id: generateItemId(),
         client,
@@ -4044,6 +4100,7 @@
         finish,
         type,
         carton,
+        deadline,
         status: "wait",
         note: (record.note || "").trim(),
         startTime: startTime ?? now(),
@@ -4095,17 +4152,64 @@
       return result;
     }
 
+    function getBatchImportDefaults() {
+      return {
+        client: "",
+        name: "",
+        qty: 1,
+        diam: lastFormValues?.diam || "58 mm",
+        finish: lastFormValues?.finish || "Mat",
+        type: lastFormValues?.type || "Aimant décoratif",
+        carton: lastFormValues?.carton || "Boîte A11",
+        deadline: null,
+        note: "",
+      };
+    }
+
     async function handleCsvImportChange(event) {
       const input = event.target;
       const file = input?.files?.[0];
       if (!file) return;
       try {
         const content = await file.text();
-        const records = parseCsvContent(content);
-        if (!records.length) {
-          throw new Error("Aucune donnée trouvée dans le fichier.");
+        let importedItems = null;
+        let lastError = null;
+        try {
+          const records = parseCsvContent(content);
+          if (!records.length) {
+            throw new Error("Aucune donnée trouvée dans le fichier.");
+          }
+          importedItems = records.map((entry) => recordToItem(entry.data, entry.lineNumber));
+        } catch (err) {
+          lastError = err;
+          importedItems = null;
         }
-        const importedItems = records.map((entry) => recordToItem(entry.data, entry.lineNumber));
+        if ((!importedItems || !importedItems.length) && typeof window !== "undefined") {
+          const batchParser = window.parseBatchCsv;
+          if (typeof batchParser === "function") {
+            try {
+              const batchRecords = batchParser(content, getBatchImportDefaults()) || [];
+              if (batchRecords.length) {
+                importedItems = batchRecords.map((entry) => {
+                  const created = newItem(entry);
+                  transitionStatus(created, created.status, created.startTime || now());
+                  return created;
+                });
+                lastError = null;
+                console.info(
+                  `Import CSV batch interprété (${importedItems.length} commande${
+                    importedItems.length > 1 ? "s" : ""
+                  }).`
+                );
+              }
+            } catch (batchErr) {
+              lastError = batchErr;
+            }
+          }
+        }
+        if (!importedItems || !importedItems.length) {
+          throw lastError || new Error("Aucune donnée trouvée dans le fichier.");
+        }
         const replaceAll =
           !items.length ||
           confirm(
@@ -4151,6 +4255,7 @@
         finish: c.finish,
         type: c.type,
         carton: c.carton,
+        deadline: c.deadline ? fmtShortDate(c.deadline) : "",
         status: c.status,
         startTime: c.startTime,
         endTime: c.endTime || "",
@@ -4191,13 +4296,13 @@
           <td>${escapeHtml(i.client)}</td>
           <td style="text-align:right">${i.qty}</td>
           <td>${i.diam}</td><td>${i.finish}</td><td>${i.type}</td><td>${i.carton}</td><td>${escapeHtml(i.note || "")}</td>
-          <td>${fmtDate(i.startTime)}</td><td>${fmtDate(i.endTime)}</td>
+          <td>${fmtShortDate(i.deadline)}</td><td>${fmtDate(i.startTime)}</td><td>${fmtDate(i.endTime)}</td>
           ${durCell}
         </tr>`;
         })
         .join("");
 
-      const headCols = `<th>Nom</th><th>Client</th><th>Qté</th><th>Format</th><th>Finition</th><th>Attache</th><th>Carton</th><th>Note</th><th>Créé</th><th>Terminé</th>${
+      const headCols = `<th>Nom</th><th>Client</th><th>Qté</th><th>Format</th><th>Finition</th><th>Attache</th><th>Carton</th><th>Note</th><th>Échéance</th><th>Créé</th><th>Terminé</th>${
         withDur ? "<th>Durée</th>" : ""
       }`;
       const htmlTable = `
@@ -4216,9 +4321,11 @@
           const endLabel = fmtDate(i.endTime);
           const endPart = endLabel !== "—" ? ` • Terminé: ${endLabel}` : "";
           const note = (i.note || "").trim();
+          const deadlineShort = fmtShortDate(i.deadline);
           const lines = [
             `${idx + 1}. ${i.name} — ${i.client}`,
-            `   Qté: ${i.qty} • Format: ${i.diam} • Finition: ${i.finish} • Attache: ${i.type} • Carton: ${i.carton}`,
+            `   Qté: ${i.qty} • Format: ${i.diam} • Finition: ${i.finish} • Attache: ${i.type} • Carton: ${i.carton}` +
+              (deadlineShort !== "—" ? ` • Échéance: ${deadlineShort}` : ""),
             `   Créé: ${fmtDate(i.startTime)}${endPart}${durLabel}`,
           ];
           if (note) {
