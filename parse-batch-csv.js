@@ -275,7 +275,10 @@ export function parseBatchCsv(input, defaults = {}) {
     if (defaults.note) noteParts.push(String(defaults.note));
     if (baseNote) noteParts.push(baseNote);
     if (formatInfo.unknownTokens.length) {
-      noteParts.push(`Tokens inconnus: ${formatInfo.unknownTokens.join(", ")}`);
+      console.warn(
+        "Tokens de format inconnus détectés pour l'entrée CSV",
+        formatInfo.unknownTokens
+      );
     }
     const deadline = parseDeadline(cells[2]);
     results.push({
