@@ -1167,9 +1167,25 @@
     <h3 id="sheetTitle">Nouvelle commande</h3>
     <form class="f" id="orderForm">
       <label class="sr-only" for="fClient">Client *</label>
-      <input id="fClient" name="fClient" placeholder="Client *" required />
+      <input
+        id="fClient"
+        name="fClient"
+        placeholder="Client *"
+        required
+        list="clientHistory"
+        autocomplete="off"
+      />
+      <datalist id="clientHistory"></datalist>
       <label class="sr-only" for="fName">Nom du badge *</label>
-      <input id="fName" name="fName" placeholder="Nom du badge *" required />
+      <input
+        id="fName"
+        name="fName"
+        placeholder="Nom du badge *"
+        required
+        list="nameHistory"
+        autocomplete="off"
+      />
+      <datalist id="nameHistory"></datalist>
       <div class="row2">
         <div>
           <label class="sr-only" for="fQty">Quantité *</label>
@@ -1305,6 +1321,9 @@
     const THEME = "vmach_theme";
     const STATS_BASE = "vmach_stats_baseline_v1";
     const DEFAULT_THEME = "dark";
+    const LAST_FORM = "vmach_last_form_v1";
+    const FORM_HISTORY = "vmach_form_history_v1";
+    const HISTORY_LIMIT = 120;
 
     function isValidTheme(value) {
       return value === "light" || value === "dark";
@@ -1326,6 +1345,8 @@
       completion: 0,
       doneCount: 0,
     };
+    let lastFormValues = loadLastFormValues();
+    let formHistory = loadFormHistory();
     let filter = "all",
       search = "";
     let sortBy = localStorage.getItem("vmach_sort") || "recent";
@@ -1336,8 +1357,12 @@
 
     const $ = (sel) => document.querySelector(sel);
     const listEl = $("#list");
+    const clientHistoryList = $("#clientHistory");
+    const nameHistoryList = $("#nameHistory");
 
     const emptyStateEl = $("#emptyState");
+
+    seedFormHistoryFromItems(items);
 
 
     let sortableInstance = null;
@@ -1364,6 +1389,373 @@
       localStorage.setItem(K, JSON.stringify(items));
       saveToIndexedDB(items);
 
+    }
+
+    function loadLastFormValues() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(LAST_FORM) || "{}");
+        if (raw && typeof raw === "object") {
+          return {
+            qty:
+              typeof raw.qty === "string"
+                ? raw.qty
+                : raw.qty || raw.qty === 0
+                ? String(raw.qty)
+                : "",
+            diam: typeof raw.diam === "string" ? raw.diam : "",
+            finish: typeof raw.finish === "string" ? raw.finish : "",
+            type: typeof raw.type === "string" ? raw.type : "",
+            carton: typeof raw.carton === "string" ? raw.carton : "",
+          };
+        }
+      } catch (err) {
+        console.warn("Impossible de lire les dernières valeurs du formulaire", err);
+      }
+      return { qty: "", diam: "", finish: "", type: "", carton: "" };
+    }
+
+    function persistLastFormValues() {
+      try {
+        localStorage.setItem(LAST_FORM, JSON.stringify(lastFormValues));
+      } catch (err) {
+        console.warn("Impossible de sauvegarder les dernières valeurs du formulaire", err);
+      }
+    }
+
+    function rememberLastFormValues(fields) {
+      if (!fields) return;
+      lastFormValues = {
+        qty: fields.fQty?.value ? String(fields.fQty.value) : "",
+        diam: fields.fDiam?.value || "",
+        finish: fields.fFinish?.value || "",
+        type: fields.fType?.value || "",
+        carton: fields.fCarton?.value || "",
+      };
+      persistLastFormValues();
+    }
+
+    function hasSelectOption(select, value) {
+      if (!select || !value) return false;
+      return Array.from(select.options || []).some((opt) => opt.value === value);
+    }
+
+    function applyLastFormValues(fields) {
+      if (!fields || !lastFormValues) return;
+      if (fields.fQty && lastFormValues.qty) fields.fQty.value = lastFormValues.qty;
+      if (fields.fDiam && hasSelectOption(fields.fDiam, lastFormValues.diam)) {
+        fields.fDiam.value = lastFormValues.diam;
+      }
+      if (fields.fFinish && hasSelectOption(fields.fFinish, lastFormValues.finish)) {
+        fields.fFinish.value = lastFormValues.finish;
+      }
+      if (fields.fType && hasSelectOption(fields.fType, lastFormValues.type)) {
+        fields.fType.value = lastFormValues.type;
+      }
+      if (fields.fCarton && hasSelectOption(fields.fCarton, lastFormValues.carton)) {
+        fields.fCarton.value = lastFormValues.carton;
+      }
+    }
+
+    function normalizeHistoryValue(value) {
+      return typeof value === "string" ? value.trim() : "";
+    }
+
+    function historyKey(value) {
+      const normalized = normalizeHistoryValue(value);
+      return normalized ? normalized.toLocaleLowerCase("fr-FR") : "";
+    }
+
+    function makeComboKey(client, name) {
+      const c = historyKey(client);
+      const n = historyKey(name);
+      if (!c || !n) return "";
+      return `${c}__${n}`;
+    }
+
+    function trimHistoryList(list, max = HISTORY_LIMIT) {
+      if (!Array.isArray(list)) return;
+      if (list.length > max) {
+        list.splice(0, list.length - max);
+      }
+    }
+
+    function addHistoryEntry(list, value) {
+      if (!Array.isArray(list)) return false;
+      const normalized = normalizeHistoryValue(value);
+      if (!normalized) return false;
+      const lower = normalized.toLocaleLowerCase("fr-FR");
+      const existingIndex = list.findIndex(
+        (entry) => entry.toLocaleLowerCase("fr-FR") === lower
+      );
+      if (existingIndex >= 0) {
+        if (existingIndex === list.length - 1) {
+          return false;
+        }
+        list.splice(existingIndex, 1);
+        list.push(normalized);
+        return true;
+      }
+      list.push(normalized);
+      trimHistoryList(list);
+      return true;
+    }
+
+    function sanitizePreset(details, client, name) {
+      if (!details || typeof details !== "object") return null;
+      return {
+        client: normalizeHistoryValue(client ?? details.client),
+        name: normalizeHistoryValue(name ?? details.name),
+        qty:
+          details.qty !== undefined && details.qty !== null && details.qty !== ""
+            ? String(details.qty)
+            : "",
+        diam: typeof details.diam === "string" ? details.diam : "",
+        finish: typeof details.finish === "string" ? details.finish : "",
+        type: typeof details.type === "string" ? details.type : "",
+        carton: typeof details.carton === "string" ? details.carton : "",
+      };
+    }
+
+    function isSamePreset(a, b) {
+      if (!a || !b) return false;
+      return (
+        normalizeHistoryValue(a.client) === normalizeHistoryValue(b.client) &&
+        normalizeHistoryValue(a.name) === normalizeHistoryValue(b.name) &&
+        (a.qty || "") === (b.qty || "") &&
+        (a.diam || "") === (b.diam || "") &&
+        (a.finish || "") === (b.finish || "") &&
+        (a.type || "") === (b.type || "") &&
+        (a.carton || "") === (b.carton || "")
+      );
+    }
+
+    function loadFormHistory() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(FORM_HISTORY) || "{}");
+        const clients = Array.isArray(raw?.clients)
+          ? raw.clients.map(normalizeHistoryValue).filter(Boolean)
+          : [];
+        const names = Array.isArray(raw?.names)
+          ? raw.names.map(normalizeHistoryValue).filter(Boolean)
+          : [];
+        const combos = {};
+        if (raw?.combos && typeof raw.combos === "object") {
+          for (const [key, value] of Object.entries(raw.combos)) {
+            const preset = sanitizePreset(value, value?.client, value?.name);
+            if (key && preset) combos[key] = preset;
+          }
+        }
+        const lastByClient = {};
+        if (raw?.lastByClient && typeof raw.lastByClient === "object") {
+          for (const [key, value] of Object.entries(raw.lastByClient)) {
+            const preset = sanitizePreset(value, value?.client, value?.name);
+            if (key && preset) lastByClient[key] = preset;
+          }
+        }
+        const lastByName = {};
+        if (raw?.lastByName && typeof raw.lastByName === "object") {
+          for (const [key, value] of Object.entries(raw.lastByName)) {
+            const preset = sanitizePreset(value, value?.client, value?.name);
+            if (key && preset) lastByName[key] = preset;
+          }
+        }
+        return {
+          clients,
+          names,
+          combos,
+          lastByClient,
+          lastByName,
+        };
+      } catch (err) {
+        console.warn("Impossible de lire l'historique du formulaire", err);
+        return { clients: [], names: [], combos: {}, lastByClient: {}, lastByName: {} };
+      }
+    }
+
+    function persistFormHistory() {
+      try {
+        const payload = {
+          clients: Array.isArray(formHistory?.clients)
+            ? formHistory.clients.slice(-HISTORY_LIMIT)
+            : [],
+          names: Array.isArray(formHistory?.names)
+            ? formHistory.names.slice(-HISTORY_LIMIT)
+            : [],
+          combos: formHistory?.combos || {},
+          lastByClient: formHistory?.lastByClient || {},
+          lastByName: formHistory?.lastByName || {},
+        };
+        localStorage.setItem(FORM_HISTORY, JSON.stringify(payload));
+      } catch (err) {
+        console.warn("Impossible de sauvegarder l'historique du formulaire", err);
+      }
+    }
+
+    function addToFormHistory(client, name, persist = true, details = null) {
+      if (!formHistory) {
+        formHistory = { clients: [], names: [], combos: {}, lastByClient: {}, lastByName: {} };
+      }
+      const normalizedClient = normalizeHistoryValue(client);
+      const normalizedName = normalizeHistoryValue(name);
+      let changed = false;
+
+      if (normalizedClient) {
+        changed = addHistoryEntry(formHistory.clients, normalizedClient) || changed;
+      }
+      if (normalizedName) {
+        changed = addHistoryEntry(formHistory.names, normalizedName) || changed;
+      }
+
+      const preset = details ? sanitizePreset(details, normalizedClient, normalizedName) : null;
+      if (preset) {
+        formHistory.lastByClient = formHistory.lastByClient || {};
+        formHistory.lastByName = formHistory.lastByName || {};
+        formHistory.combos = formHistory.combos || {};
+        const clientKey = historyKey(normalizedClient);
+        const nameKey = historyKey(normalizedName);
+        const comboKey = makeComboKey(normalizedClient, normalizedName);
+
+        if (clientKey) {
+          const prev = formHistory.lastByClient[clientKey];
+          if (!prev || !isSamePreset(prev, preset)) {
+            formHistory.lastByClient[clientKey] = { ...preset };
+            changed = true;
+          }
+        }
+        if (nameKey) {
+          const prev = formHistory.lastByName[nameKey];
+          if (!prev || !isSamePreset(prev, preset)) {
+            formHistory.lastByName[nameKey] = { ...preset };
+            changed = true;
+          }
+        }
+        if (comboKey) {
+          const prev = formHistory.combos[comboKey];
+          if (!prev || !isSamePreset(prev, preset)) {
+            formHistory.combos[comboKey] = { ...preset };
+            changed = true;
+          }
+        }
+      }
+
+      if (persist && changed) {
+        persistFormHistory();
+      }
+      if (persist) {
+        updateHistorySuggestions();
+      }
+
+      return changed;
+    }
+
+    function findHistoryPreset(client, name) {
+      if (!formHistory) return null;
+      const comboKey = makeComboKey(client, name);
+      if (comboKey && formHistory.combos?.[comboKey]) {
+        return formHistory.combos[comboKey];
+      }
+      const nameKey = historyKey(name);
+      if (nameKey && formHistory.lastByName?.[nameKey]) {
+        return formHistory.lastByName[nameKey];
+      }
+      const clientKey = historyKey(client);
+      if (clientKey && formHistory.lastByClient?.[clientKey]) {
+        return formHistory.lastByClient[clientKey];
+      }
+      return null;
+    }
+
+    function applyPresetToFields(preset, fields) {
+      if (!preset || !fields) return;
+      if (fields.fQty && preset.qty) {
+        fields.fQty.value = preset.qty;
+      }
+      if (fields.fDiam && hasSelectOption(fields.fDiam, preset.diam)) {
+        fields.fDiam.value = preset.diam;
+      }
+      if (fields.fFinish && hasSelectOption(fields.fFinish, preset.finish)) {
+        fields.fFinish.value = preset.finish;
+      }
+      if (fields.fType && hasSelectOption(fields.fType, preset.type)) {
+        fields.fType.value = preset.type;
+      }
+      if (fields.fCarton && hasSelectOption(fields.fCarton, preset.carton)) {
+        fields.fCarton.value = preset.carton;
+      }
+    }
+
+    function seedFormHistoryFromItems(list) {
+      if (!Array.isArray(list)) {
+        updateHistorySuggestions();
+        return;
+      }
+      const sorted = [...list].sort(
+        (a, b) => (a?.startTime || 0) - (b?.startTime || 0)
+      );
+      let changed = false;
+      for (const item of sorted) {
+        if (!item) continue;
+        const details = {
+          qty: item.qty,
+          diam: item.diam,
+          finish: item.finish,
+          type: item.type,
+          carton: item.carton,
+        };
+        if (addToFormHistory(item.client, item.name, false, details)) {
+          changed = true;
+        }
+      }
+      if (changed) {
+        persistFormHistory();
+      }
+      updateHistorySuggestions();
+    }
+
+    function uniqueSortedHistory(values) {
+      const seen = new Set();
+      const result = [];
+      for (const value of values || []) {
+        const normalized = normalizeHistoryValue(value);
+        if (!normalized) continue;
+        const key = normalized.toLocaleLowerCase("fr-FR");
+        if (seen.has(key)) continue;
+        seen.add(key);
+        result.push(normalized);
+      }
+      return result.sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
+    }
+
+    function renderHistoryOptions(target, values) {
+      if (!target) return;
+      target.innerHTML = values
+        .map((value) => `<option value="${escapeHtml(value)}"></option>`)
+        .join("");
+    }
+
+    function updateHistorySuggestions() {
+      if (!clientHistoryList && !nameHistoryList) return;
+      const clientsSource = [
+        ...(formHistory?.clients || []),
+        ...items.map((item) => item?.client),
+      ];
+      const namesSource = [
+        ...(formHistory?.names || []),
+        ...items.map((item) => item?.name),
+      ];
+      renderHistoryOptions(clientHistoryList, uniqueSortedHistory(clientsSource));
+      renderHistoryOptions(nameHistoryList, uniqueSortedHistory(namesSource));
+    }
+
+    function prefillFromHistoryIfAvailable() {
+      if (!orderForm) return;
+      const fields = orderForm.elements;
+      const client = fields.fClient?.value || "";
+      const name = fields.fName?.value || "";
+      const preset = findHistoryPreset(client, name);
+      if (preset) {
+        applyPresetToFields(preset, fields);
+      }
     }
 
     function loadStatsBaseline() {
@@ -1500,6 +1892,7 @@
       const persisted = await loadFromIndexedDB();
       if (Array.isArray(persisted)) {
         items = persisted.map(enrichItemState);
+        seedFormHistoryFromItems(items);
         render();
       } else {
         saveToIndexedDB(items);
@@ -1844,7 +2237,7 @@
       if (orderForm) {
         orderForm.reset();
         const fields = orderForm.elements;
-        fields.fStatus.value = "wait";
+        if (fields.fStatus) fields.fStatus.value = "wait";
         if (edit) {
           fields.fClient.value = edit.client || "";
           fields.fName.value = edit.name || "";
@@ -1855,6 +2248,8 @@
           fields.fCarton.value = edit.carton || "";
           fields.fStatus.value = edit.status || "wait";
           fields.fNote.value = edit.note || "";
+        } else {
+          applyLastFormValues(fields);
         }
         setTimeout(() => fields.fClient?.focus(), 100);
       }
@@ -1879,12 +2274,23 @@
     };
 
     if (orderForm) {
+      const attachHistoryPrefill = (el) => {
+        if (!el) return;
+        el.addEventListener("change", prefillFromHistoryIfAvailable);
+        el.addEventListener("blur", prefillFromHistoryIfAvailable);
+        el.addEventListener("input", prefillFromHistoryIfAvailable);
+      };
+      attachHistoryPrefill(orderForm.elements.fClient);
+      attachHistoryPrefill(orderForm.elements.fName);
+
       orderForm.addEventListener("submit", (event) => {
         event.preventDefault();
         const fields = orderForm.elements;
+        const clientValue = fields.fClient.value.trim();
+        const nameValue = fields.fName.value.trim();
         const o = {
-          client: fields.fClient.value,
-          name: fields.fName.value,
+          client: clientValue,
+          name: nameValue,
           qty: fields.fQty.value,
           diam: fields.fDiam.value,
           finish: fields.fFinish.value,
@@ -1897,6 +2303,15 @@
           alert("Merci de remplir tous les champs obligatoires.");
           return;
         }
+
+        rememberLastFormValues(fields);
+        addToFormHistory(clientValue, nameValue, true, {
+          qty: o.qty,
+          diam: o.diam,
+          finish: o.finish,
+          type: o.type,
+          carton: o.carton,
+        });
 
         if (editId) {
           const ix = items.findIndex((x) => x.id === editId);
@@ -1974,6 +2389,7 @@
     function render() {
       items.forEach(enrichItemState);
       computeStats();
+      updateHistorySuggestions();
       const list = listEl;
 
       // stop previous live timer (global unique)
@@ -2616,6 +3032,7 @@
           );
         const nextItems = replaceAll ? importedItems : mergeImportedItems(items, importedItems);
         items = nextItems;
+        seedFormHistoryFromItems(items);
         save();
         render();
         vibrate();
@@ -2842,6 +3259,9 @@
 
     window.addEventListener("storage", () => {
       items = load().map(enrichItemState);
+      lastFormValues = loadLastFormValues();
+      formHistory = loadFormHistory();
+      seedFormHistoryFromItems(items);
       saveToIndexedDB(items);
       render();
     });
