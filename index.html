@@ -107,14 +107,6 @@
       --field-bg: rgba(16, 26, 42, 0.9);
       --field-border: rgba(255, 255, 255, 0.1);
       --field-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-      --insight-bg: linear-gradient(165deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0)),
-        var(--surface);
-      --insight-border: rgba(255, 255, 255, 0.12);
-      --insight-card-bg: linear-gradient(165deg, rgba(115, 135, 215, 0.16) 0%, rgba(90, 183, 164, 0.08) 75%),
-        var(--surface-soft);
-      --insight-card-border: rgba(255, 255, 255, 0.08);
-      --insight-card-shadow: 0 18px 32px rgba(4, 10, 24, 0.35);
-      --insight-card-highlight: radial-gradient(circle at top right, rgba(115, 135, 215, 0.16), transparent 60%);
       --card-bg: linear-gradient(155deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 80%), var(--surface);
       --card-border: rgba(255, 255, 255, 0.08);
       --badge-bg: rgba(115, 135, 215, 0.22);
@@ -126,7 +118,6 @@
       --badge-done-bg: rgba(90, 183, 164, 0.28);
       --badge-done-border: rgba(90, 183, 164, 0.6);
       --badge-done-text: #062822;
-      --insight-progress-bg: rgba(255, 255, 255, 0.08);
     }
     [data-theme="light"] {
       color-scheme: light;
@@ -200,14 +191,6 @@
       --field-bg: #ffffff;
       --field-border: rgba(28, 51, 101, 0.18);
       --field-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
-      --insight-bg: linear-gradient(165deg, rgba(63, 136, 121, 0.14), rgba(93, 110, 214, 0.08)),
-        var(--surface);
-      --insight-border: rgba(31, 41, 55, 0.12);
-      --insight-card-bg: linear-gradient(165deg, rgba(93, 110, 214, 0.14) 0%, rgba(63, 136, 121, 0.08) 75%),
-        var(--surface-soft);
-      --insight-card-border: rgba(63, 136, 121, 0.2);
-      --insight-card-shadow: 0 18px 32px rgba(63, 136, 121, 0.18);
-      --insight-card-highlight: radial-gradient(circle at top right, rgba(93, 110, 214, 0.2), transparent 60%);
       --card-bg: linear-gradient(155deg, rgba(63, 136, 121, 0.12) 0%, rgba(93, 110, 214, 0.08) 80%), var(--surface);
       --card-border: rgba(31, 41, 55, 0.12);
       --badge-bg: rgba(101, 138, 214, 0.18);
@@ -219,7 +202,6 @@
       --badge-done-bg: rgba(63, 136, 121, 0.24);
       --badge-done-border: rgba(63, 136, 121, 0.5);
       --badge-done-text: #0f372d;
-      --insight-progress-bg: rgba(31, 41, 55, 0.12);
     }
 
     * {
@@ -339,25 +321,6 @@
       .card {
         border-radius: var(--radius-md);
         padding: 20px 18px 18px;
-      }
-      #insights {
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100vh;
-        max-height: none;
-        border-radius: 0;
-        padding: calc(env(safe-area-inset-top, 0) + 24px) var(--page-pad) calc(28px + var(--safe-bottom));
-        transform: translateY(8%) scale(0.94);
-      }
-      #insights.open {
-        transform: translateY(0) scale(1);
-      }
-      .insights__row {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      }
-      .insights__actions {
-        justify-content: center;
       }
       .export {
         margin: 22px 0 8px;
@@ -870,39 +833,6 @@
       font-size: 0.78rem;
       color: var(--text-soft);
     }
-    .command-menu__progress {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      align-items: center;
-    }
-    .command-menu__progress-labels {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .command-menu__progress-bar {
-      grid-column: 1 / -1;
-      height: 8px;
-      border-radius: 999px;
-      background: var(--insight-progress-bg);
-      position: relative;
-      overflow: hidden;
-    }
-    .command-menu__progress-bar span {
-      position: absolute;
-      inset: 0;
-      width: 0;
-      background: var(--brand-gradient);
-      border-radius: inherit;
-      box-shadow: 0 8px 18px rgba(90, 183, 164, 0.32);
-      transition: width 0.25s ease;
-    }
-    .command-menu__progress-value {
-      font-weight: 700;
-      font-size: 1rem;
-      justify-self: end;
-    }
     .smart-filter__info {
       display: flex;
       flex-wrap: wrap;
@@ -1049,116 +979,6 @@
       .command-menu__actions {
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       }
-    }
-
-    #insights {
-      grid-area: insights;
-      position: fixed;
-      top: calc(var(--page-pad) + 72px);
-      left: 50%;
-      width: min(420px, calc(100% - 2 * var(--page-pad)));
-      padding: 20px clamp(18px, 3vw, 24px) 24px;
-      border-radius: var(--radius-lg);
-      background: var(--insight-bg);
-      border: 1px solid var(--insight-border);
-      box-shadow: var(--shadow-lg);
-      transform-origin: top center;
-      transform: translate(-50%, -6%) scale(0.92);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.22s ease, transform 0.22s ease;
-      z-index: 70;
-      max-height: calc(100vh - 2 * var(--page-pad));
-      overflow: auto;
-    }
-    #insights.open {
-      opacity: 1;
-      transform: translate(-50%, 0) scale(1);
-      pointer-events: auto;
-    }
-    .insights__head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    .insights__head strong {
-      font-size: 0.95rem;
-      letter-spacing: 0.3px;
-    }
-    .insights__row {
-      display: grid;
-      gap: clamp(12px, 2vw, 18px);
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    }
-    .insight-card {
-      padding: 14px 16px 16px;
-      border-radius: var(--radius-md);
-      background: var(--insight-card-bg);
-      border: 1px solid var(--insight-card-border);
-      box-shadow: var(--insight-card-shadow);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      position: relative;
-      overflow: hidden;
-    }
-    .insight-card::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: var(--insight-card-highlight);
-      opacity: 0.4;
-      pointer-events: none;
-    }
-    .insight-card span {
-      font-size: 0.75rem;
-      color: var(--text-soft);
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-    }
-    .insight-card strong {
-      font-size: 1.7rem;
-      font-weight: 700;
-      color: var(--accent);
-      text-shadow: 0 6px 18px rgba(90, 183, 164, 0.32);
-    }
-    .insight-card small {
-      font-size: 0.8rem;
-      color: var(--text-subtle);
-      line-height: 1.3;
-    }
-    .insight-card--wide {
-      grid-column: span 2;
-    }
-    @media (max-width: 520px) {
-      .insight-card--wide {
-        grid-column: span 1;
-      }
-    }
-    .insight-progress {
-      width: 100%;
-      height: 6px;
-      border-radius: 999px;
-      background: var(--insight-progress-bg);
-      overflow: hidden;
-      position: relative;
-    }
-    .insight-progress__bar {
-      position: absolute;
-      inset: 0;
-      width: 0;
-      background: var(--brand-gradient);
-      border-radius: inherit;
-      box-shadow: 0 4px 12px rgba(90, 183, 164, 0.28);
-      transition: width 0.25s ease;
-    }
-    .insights__actions {
-      margin-top: 12px;
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
     }
 
     .ghost-small {
@@ -1591,36 +1411,14 @@
 
     @media (min-width: 768px) {
       .page-grid {
-        grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+        grid-template-columns: minmax(0, 1fr);
         grid-template-areas:
-          "header header"
-          "list insights";
+          "header"
+          "list";
       }
       header {
         position: sticky;
         top: var(--page-pad);
-      }
-      #insights {
-        position: sticky;
-        top: var(--page-pad);
-        left: auto;
-        width: 100%;
-        max-height: none;
-        transform: none;
-        opacity: 1;
-        pointer-events: auto;
-        box-shadow: var(--shadow-lg);
-        overflow: visible;
-        align-self: start;
-      }
-      #insights.open {
-        transform: none;
-      }
-      .insights__actions {
-        justify-content: flex-start;
-      }
-      #closeInsights {
-        display: none;
       }
       .page-main {
         padding-bottom: clamp(160px, 18vh, 220px);
@@ -1632,16 +1430,10 @@
 
     @media (min-width: 1280px) {
       .page-grid {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(320px, 0.85fr);
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         grid-template-areas:
-          "header header insights"
-          "list list insights";
-      }
-      .insights__row {
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      }
-      .insight-card--wide {
-        grid-column: span 2;
+          "header header"
+          "list list";
       }
       #list {
         grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -1716,47 +1508,6 @@
       </header>
 
       <section class="command-menu__section">
-        <span class="command-menu__section-title">Résumé en direct</span>
-        <div class="command-menu__stats">
-          <div class="command-menu__stat" data-kind="total">
-            <span>Total suivi</span>
-            <strong id="menuCountTotal">0</strong>
-            <small>Commandes actives</small>
-          </div>
-          <div class="command-menu__stat" data-kind="wait">
-            <span>En attente</span>
-            <strong id="menuCountWait">0</strong>
-            <small>À lancer</small>
-          </div>
-          <div class="command-menu__stat" data-kind="pause">
-            <span>En pause</span>
-            <strong id="menuCountPause">0</strong>
-            <small>Temporisées</small>
-          </div>
-          <div class="command-menu__stat" data-kind="done">
-            <span>Terminées</span>
-            <strong id="menuCountDone">0</strong>
-            <small>Clôturées</small>
-          </div>
-          <div class="command-menu__stat" data-kind="produced">
-            <span>Badges produits</span>
-            <strong id="menuProduced">0</strong>
-            <small>Total cumulé</small>
-          </div>
-        </div>
-        <div class="command-menu__progress">
-          <div class="command-menu__progress-labels">
-            <span>Progression globale</span>
-            <small id="menuCompletionSummary">0 / 0 commande</small>
-          </div>
-          <div class="command-menu__progress-bar" role="presentation">
-            <span id="menuCompletionBar"></span>
-          </div>
-          <span class="command-menu__progress-value" id="menuCompletionLabel">0 %</span>
-        </div>
-      </section>
-
-      <section class="command-menu__section">
         <div class="command-menu__section-head">
           <span class="command-menu__section-title">Vues intelligentes</span>
           <button class="link-btn" type="button" data-smart-reset>Réinitialiser</button>
@@ -1772,7 +1523,7 @@
           </button>
           <button class="command-menu__smart" type="button" data-smart="urgent">
             <span class="command-menu__smart-label">Urgences</span>
-            <small>Commandes en attente depuis 90&nbsp;min+</small>
+            <small>Commandes en attente depuis 90&nbsp;min+ ou échéance proche.</small>
           </button>
           <button class="command-menu__smart" type="button" data-smart="highVolume">
             <span class="command-menu__smart-label">Gros volumes</span>
@@ -1808,11 +1559,6 @@
             <strong>Nouvelle commande</strong>
             <span>Créez un badge immédiatement.</span>
           </button>
-          <button class="command-menu__action" type="button" data-menu-action="open-insights">
-            <span class="command-menu__icon">📊</span>
-            <strong>Compteurs</strong>
-            <span>Ouvrir la synthèse des performances.</span>
-          </button>
           <button class="command-menu__action" type="button" data-menu-action="open-settings">
             <span class="command-menu__icon">⚙️</span>
             <strong>Réglages</strong>
@@ -1826,55 +1572,6 @@
         </div>
       </section>
     </nav>
-
-    <aside id="insights" class="insights-panel" aria-hidden="true">
-      <div class="insights__head">
-        <strong>Compteurs</strong>
-        <button class="ghost-small" id="closeInsights" type="button" title="Fermer les compteurs">✕</button>
-      </div>
-      <div class="insights__row">
-        <div class="insight-card">
-          <span>Badges fabriqués</span>
-          <strong id="insightBadges">0</strong>
-          <small>Depuis la dernière remise à zéro</small>
-        </div>
-        <div class="insight-card">
-          <span>Total commandes</span>
-          <strong id="insightOrders">0</strong>
-          <small>Commandes enregistrées</small>
-        </div>
-        <div class="insight-card">
-          <span>En cours</span>
-          <strong id="insightWaiting">0</strong>
-          <small>Commandes actives</small>
-        </div>
-        <div class="insight-card">
-          <span>En pause</span>
-          <strong id="insightPaused">0</strong>
-          <small>Temporisées</small>
-        </div>
-        <div class="insight-card insight-card--wide">
-          <span>Durée moyenne (terminées)</span>
-          <strong id="insightAvg">—</strong>
-          <small id="insightAvgDetail">Aucune commande terminée</small>
-        </div>
-        <div class="insight-card insight-card--wide">
-          <span>Temps actif cumulé</span>
-          <strong id="insightActive">—</strong>
-          <div class="insight-progress" aria-hidden="true">
-            <div class="insight-progress__bar" id="insightCompletionBar"></div>
-          </div>
-          <small>
-            <b id="insightDoneCount">0</b> terminées • <span id="insightCompletionLabel">0%</span> de progression
-          </small>
-        </div>
-      </div>
-      <div class="insights__actions">
-        <button class="ghost-small" id="resetInsights" type="button" title="Réinitialiser les compteurs">
-          Réinitialiser
-        </button>
-      </div>
-    </aside>
 
     <main class="page-main">
       <div id="emptyState" class="empty-state" hidden>
@@ -2053,7 +1750,6 @@
     const K = "vmach_badges_v1";
     const P = "vmach_prefs_v1";
     const THEME = "vmach_theme";
-    const STATS_BASE = "vmach_stats_baseline_v1";
     const DEFAULT_THEME = "dark";
     const LAST_FORM = "vmach_last_form_v1";
     const FORM_HISTORY = "vmach_form_history_v1";
@@ -2068,7 +1764,8 @@
       urgent: {
         id: "urgent",
         label: "Urgences",
-        description: "Met en avant les commandes en attente depuis plus de 90 minutes.",
+        description:
+          "Met en avant les commandes en attente depuis plus de 90 minutes ou proches de leur échéance.",
       },
       highVolume: {
         id: "highVolume",
@@ -2084,6 +1781,7 @@
     const URGENT_DELAY_MS = 90 * 60 * 1000;
     const RECENT_DONE_MS = 24 * 60 * 60 * 1000;
     const HIGH_VOLUME_QTY = 200;
+    const DEADLINE_SOON_MS = 24 * 60 * 60 * 1000;
     const ICONS = {
       edit: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>',
       pause: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16" rx="1"></rect><rect x="14" y="4" width="4" height="16" rx="1"></rect></svg>',
@@ -2114,17 +1812,6 @@
     }
 
     let items = load();
-    let statsBaseline = loadStatsBaseline();
-    let lastStats = {
-      produced: 0,
-      totalOrders: 0,
-      waiting: 0,
-      paused: 0,
-      avgDurationSec: 0,
-      activeSec: 0,
-      completion: 0,
-      doneCount: 0,
-    };
     let lastFormValues = loadLastFormValues();
     let formHistory = loadFormHistory();
     let filter = "all",
@@ -2545,96 +2232,6 @@
       if (preset) {
         applyPresetToFields(preset, fields);
       }
-    }
-
-    function loadStatsBaseline() {
-      try {
-        const raw = JSON.parse(localStorage.getItem(STATS_BASE) || "{}");
-        if (raw && typeof raw === "object") {
-          return {
-            produced: Number(raw.produced) || 0,
-            totalOrders: Number(raw.totalOrders) || 0,
-          };
-        }
-      } catch (err) {
-        console.warn("Impossible de lire le point de remise à zéro des compteurs", err);
-      }
-      return { produced: 0, totalOrders: 0 };
-    }
-    function persistStatsBaseline() {
-      try {
-        localStorage.setItem(STATS_BASE, JSON.stringify(statsBaseline));
-      } catch (err) {
-        console.warn("Impossible de sauvegarder le point de remise à zéro", err);
-      }
-    }
-    function updateInsightsDisplay() {
-      const badges = document.getElementById("insightBadges");
-      const orders = document.getElementById("insightOrders");
-      if (!badges || !orders) return;
-      const base = statsBaseline || { produced: 0, totalOrders: 0 };
-      const producedValue = Math.max(0, (lastStats.produced || 0) - (base.produced || 0));
-      const totalValue = Math.max(0, (lastStats.totalOrders || 0) - (base.totalOrders || 0));
-      badges.textContent = producedValue.toLocaleString("fr-FR");
-      orders.textContent = totalValue.toLocaleString("fr-FR");
-
-      const waitingEl = document.getElementById("insightWaiting");
-      if (waitingEl) waitingEl.textContent = (lastStats.waiting || 0).toLocaleString("fr-FR");
-
-      const pausedEl = document.getElementById("insightPaused");
-      if (pausedEl) pausedEl.textContent = (lastStats.paused || 0).toLocaleString("fr-FR");
-
-      const avgEl = document.getElementById("insightAvg");
-      if (avgEl) avgEl.textContent = lastStats.avgDurationSec ? fmtDur(lastStats.avgDurationSec) : "—";
-
-      const avgDetail = document.getElementById("insightAvgDetail");
-      if (avgDetail) {
-        const count = lastStats.doneCount || 0;
-        avgDetail.textContent = count
-          ? `${count.toLocaleString("fr-FR")} commande${count > 1 ? "s" : ""} terminée${count > 1 ? "s" : ""}`
-          : "Aucune commande terminée";
-      }
-
-      const activeEl = document.getElementById("insightActive");
-      if (activeEl) activeEl.textContent = lastStats.activeSec ? fmtDur(lastStats.activeSec) : "—";
-
-      const doneCountEl = document.getElementById("insightDoneCount");
-      if (doneCountEl) doneCountEl.textContent = (lastStats.doneCount || 0).toLocaleString("fr-FR");
-
-      const completionLabel = document.getElementById("insightCompletionLabel");
-      const completionBar = document.getElementById("insightCompletionBar");
-      const completionRatio = Math.max(0, Math.min(1, lastStats.completion || 0));
-      const completionPercent = Math.round(completionRatio * 100);
-      if (completionLabel) completionLabel.textContent = `${completionPercent.toLocaleString("fr-FR")} %`;
-      if (completionBar) completionBar.style.width = `${completionPercent}%`;
-    }
-
-    function updateMenuStats() {
-      const totalEl = document.getElementById("menuCountTotal");
-      if (totalEl) totalEl.textContent = (lastStats.totalOrders || 0).toLocaleString("fr-FR");
-      const waitEl = document.getElementById("menuCountWait");
-      if (waitEl) waitEl.textContent = (lastStats.waiting || 0).toLocaleString("fr-FR");
-      const pauseEl = document.getElementById("menuCountPause");
-      if (pauseEl) pauseEl.textContent = (lastStats.paused || 0).toLocaleString("fr-FR");
-      const doneEl = document.getElementById("menuCountDone");
-      if (doneEl) doneEl.textContent = (lastStats.doneCount || 0).toLocaleString("fr-FR");
-      const producedEl = document.getElementById("menuProduced");
-      if (producedEl) producedEl.textContent = (lastStats.produced || 0).toLocaleString("fr-FR");
-      const summaryEl = document.getElementById("menuCompletionSummary");
-      if (summaryEl) {
-        const done = lastStats.doneCount || 0;
-        const total = lastStats.totalOrders || 0;
-        summaryEl.textContent = `${done.toLocaleString("fr-FR")} / ${total.toLocaleString("fr-FR")} commande${
-          total > 1 ? "s" : ""
-        }`;
-      }
-      const completionValue = Math.max(0, Math.min(1, lastStats.completion || 0));
-      const completionPercent = Math.round(completionValue * 100);
-      const menuCompletionLabel = document.getElementById("menuCompletionLabel");
-      if (menuCompletionLabel)
-        menuCompletionLabel.textContent = `${completionPercent.toLocaleString("fr-FR")} %`;
-      const menuCompletionBar = document.getElementById("menuCompletionBar");
-      if (menuCompletionBar) menuCompletionBar.style.width = `${completionPercent}%`;
     }
 
     async function ensureStoragePersistence() {
@@ -3103,9 +2700,6 @@
         case "new":
           openSheet();
           break;
-        case "open-insights":
-          setInsightsOpen(true);
-          break;
         case "open-settings":
           openSettingsPanel();
           break;
@@ -3183,73 +2777,6 @@
     window.addEventListener("orientationchange", syncHeaderOffset);
     document.addEventListener("DOMContentLoaded", syncHeaderOffset);
     setTimeout(syncHeaderOffset, 80);
-
-    const insightPanel = $("#insights");
-    const insightToggleBtn = $("#insightToggle");
-    const closeInsightsBtn = $("#closeInsights");
-    const resetInsightsBtn = $("#resetInsights");
-    const insightsAutoOpenMq =
-      typeof window.matchMedia === "function" ? window.matchMedia("(min-width: 768px)") : null;
-
-    function setInsightsOpen(open) {
-      if (!insightPanel) return;
-      const forceOpen = insightsAutoOpenMq?.matches ?? false;
-      const nextOpen = forceOpen || !!open;
-      insightPanel.classList.toggle("open", nextOpen);
-      insightPanel.setAttribute("aria-hidden", String(!nextOpen));
-      if (insightToggleBtn) {
-        insightToggleBtn.setAttribute("aria-expanded", String(nextOpen));
-      }
-    }
-
-    if (insightToggleBtn && insightPanel) {
-      insightToggleBtn.addEventListener("click", () => {
-        if (insightsAutoOpenMq?.matches) return;
-        const isOpen = insightPanel.classList.contains("open");
-        setInsightsOpen(!isOpen);
-        vibrate();
-      });
-    }
-    if (closeInsightsBtn) {
-      closeInsightsBtn.addEventListener("click", () => {
-        if (insightsAutoOpenMq?.matches) return;
-        setInsightsOpen(false);
-        vibrate();
-      });
-    }
-    if (resetInsightsBtn) {
-      resetInsightsBtn.addEventListener("click", () => {
-        statsBaseline = { produced: lastStats.produced, totalOrders: lastStats.totalOrders };
-        persistStatsBaseline();
-        updateInsightsDisplay();
-        vibrate();
-      });
-    }
-    document.addEventListener("keydown", (e) => {
-      if (insightsAutoOpenMq?.matches) return;
-      if (e.key === "Escape") setInsightsOpen(false);
-    });
-    document.addEventListener("click", (e) => {
-      if (insightsAutoOpenMq?.matches) return;
-      if (!insightPanel?.classList.contains("open")) return;
-      if (insightPanel.contains(e.target)) return;
-      if (insightToggleBtn?.contains(e.target)) return;
-      setInsightsOpen(false);
-    });
-
-    if (insightsAutoOpenMq) {
-      const handleMqChange = (event) => {
-        setInsightsOpen(event.matches);
-      };
-      if (typeof insightsAutoOpenMq.addEventListener === "function") {
-        insightsAutoOpenMq.addEventListener("change", handleMqChange);
-      } else if (typeof insightsAutoOpenMq.addListener === "function") {
-        insightsAutoOpenMq.addListener(handleMqChange);
-      }
-    }
-
-    setInsightsOpen(insightsAutoOpenMq?.matches ?? false);
-    updateInsightsDisplay();
 
     /* ====== Filters, search, sort ====== */
     function syncFilterChips() {
@@ -3446,33 +2973,6 @@
     /* ====== Render ====== */
     let cardInAnimationNextRender = false;
 
-    function computeStats() {
-      const nowTs = now();
-      const doneItems = items.filter((i) => i.status === "done");
-      const produced = doneItems.reduce((total, item) => total + (Number(item.qty) || 0), 0);
-      const totalOrders = items.length;
-      const waiting = items.filter((i) => i.status === "wait").length;
-      const paused = items.filter((i) => i.status === "pause").length;
-      const doneActiveMs = doneItems.reduce((sum, item) => sum + getActiveMs(item, nowTs), 0);
-      const avgDurationSec = doneItems.length ? Math.round(doneActiveMs / doneItems.length / 1000) : 0;
-      const activeSec = Math.floor(
-        items.reduce((sum, item) => sum + getActiveMs(item, nowTs), 0) / 1000
-      );
-      const completion = totalOrders ? doneItems.length / totalOrders : 0;
-      lastStats = {
-        produced,
-        totalOrders,
-        waiting,
-        paused,
-        avgDurationSec,
-        activeSec,
-        completion,
-        doneCount: doneItems.length,
-      };
-      updateInsightsDisplay();
-      updateMenuStats();
-    }
-
     function sortItems(list) {
       const copy = [...list];
       if (sortBy === "recent") copy.sort((a, b) => (b.startTime || 0) - (a.startTime || 0));
@@ -3487,11 +2987,20 @@
       return copy;
     }
 
+    function isDeadlineUrgent(item, ts) {
+      if (!item || item.status === "done") return false;
+      const deadlineTs = Number(item.deadline);
+      if (!Number.isFinite(deadlineTs) || deadlineTs <= 0) return false;
+      if (deadlineTs <= ts) return true;
+      return deadlineTs - ts <= DEADLINE_SOON_MS;
+    }
+
     function applySmartFilter(list, ts) {
       if (!Array.isArray(list)) return [];
       if (smartFilter === "urgent") {
         return list.filter((item) => {
           if (!item || item.status === "done") return false;
+          if (isDeadlineUrgent(item, ts)) return true;
           const startRef = item.lastResumeTime || item.startTime || 0;
           if (!startRef) return false;
           return ts - startRef >= URGENT_DELAY_MS;
@@ -3547,7 +3056,6 @@
 
     function render() {
       items.forEach(enrichItemState);
-      computeStats();
       updateHistorySuggestions();
       const list = listEl;
 
