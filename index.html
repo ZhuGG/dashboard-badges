@@ -374,6 +374,43 @@
       border: 1px solid var(--header-border);
       border-radius: var(--radius-lg);
       box-shadow: var(--header-shadow);
+      overflow: hidden;
+      isolation: isolate;
+    }
+    header.page-header::after {
+      content: "";
+      position: absolute;
+      inset: -60% -40% auto -40%;
+      height: clamp(160px, 28vw, 220px);
+      background: radial-gradient(
+        120% 140% at 50% 50%,
+        rgba(148, 166, 255, 0.32),
+        transparent 70%
+      );
+      opacity: 0.35;
+      filter: blur(48px);
+      pointer-events: none;
+      mix-blend-mode: screen;
+      animation: headerGlow 14s ease-in-out infinite alternate;
+      z-index: 0;
+    }
+    header.page-header > * {
+      position: relative;
+      z-index: 1;
+    }
+    @keyframes headerGlow {
+      0% {
+        transform: translate3d(-12%, -8%, 0) scale(1);
+        opacity: 0.28;
+      }
+      50% {
+        transform: translate3d(6%, 6%, 0) scale(1.08);
+        opacity: 0.45;
+      }
+      100% {
+        transform: translate3d(16%, -6%, 0) scale(1.04);
+        opacity: 0.32;
+      }
     }
     @supports not ((backdrop-filter: blur(0)) or (-webkit-backdrop-filter: blur(0))) {
       header {
@@ -491,63 +528,6 @@
     }
     .icon-btn:active {
       transform: translateY(1px) scale(0.98);
-    }
-    .status-glance {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
-      padding: 12px clamp(12px, 4vw, 18px);
-      border-radius: var(--radius-md);
-      background: var(--ghost-bg);
-      border: 1px dashed var(--ghost-border);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    }
-    .status-glance__item {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      min-width: 0;
-    }
-    .status-glance__item span {
-      font-size: 0.72rem;
-      letter-spacing: 0.32px;
-      text-transform: uppercase;
-      color: var(--text-subtle);
-    }
-    .status-glance__item strong {
-      font-size: 1.35rem;
-      font-weight: 700;
-    }
-    .status-glance__item[data-status="wait"] strong {
-      color: var(--accent);
-    }
-    .status-glance__item[data-status="pause"] strong {
-      color: var(--warn);
-    }
-    .status-glance__item[data-status="done"] strong {
-      color: var(--ok);
-    }
-    .smart-filter-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 16px;
-      border-radius: 999px;
-      background: var(--ghost-active-bg);
-      border: 1px solid var(--ghost-active-border);
-      color: var(--ghost-active-text);
-      font-weight: 600;
-      width: fit-content;
-    }
-    .smart-filter-badge__label {
-      font-size: 0.72rem;
-      letter-spacing: 0.36px;
-      text-transform: uppercase;
-      color: var(--text-subtle);
-    }
-    .smart-filter-badge strong {
-      font-size: 0.95rem;
-      color: var(--text);
     }
     .link-btn {
       display: inline-flex;
@@ -945,16 +925,6 @@
     }
     body.menu-open {
       overflow: hidden;
-    }
-    @media (max-width: 720px) {
-      .status-glance {
-        display: flex;
-        overflow-x: auto;
-        padding: 12px clamp(16px, 5vw, 20px);
-      }
-      .status-glance__item {
-        min-width: 140px;
-      }
     }
     @media (max-width: 720px) {
       .command-menu {
@@ -1509,29 +1479,6 @@
         <button class="chip" data-f="wait">En attente</button>
         <button class="chip" data-f="pause">En pause</button>
         <button class="chip" data-f="done">Terminées</button>
-      </div>
-      <div class="status-glance" id="statusGlance">
-        <div class="status-glance__item" data-status="total">
-          <span>Total suivi</span>
-          <strong id="glanceTotal">0</strong>
-        </div>
-        <div class="status-glance__item" data-status="wait">
-          <span>En attente</span>
-          <strong id="glanceWait">0</strong>
-        </div>
-        <div class="status-glance__item" data-status="pause">
-          <span>En pause</span>
-          <strong id="glancePause">0</strong>
-        </div>
-        <div class="status-glance__item" data-status="done">
-          <span>Terminées</span>
-          <strong id="glanceDone">0</strong>
-        </div>
-      </div>
-      <div class="smart-filter-badge" id="smartFilterBadge" hidden>
-        <span class="smart-filter-badge__label">Vue intelligente :</span>
-        <strong id="smartFilterBadgeLabel"></strong>
-        <button class="link-btn" type="button" data-smart-reset>Réinitialiser</button>
       </div>
       <div class="utility">
         <div class="search">
@@ -2476,17 +2423,6 @@
       if (menuCompletionBar) menuCompletionBar.style.width = `${completionPercent}%`;
     }
 
-    function updateStatusGlance() {
-      const setText = (id, value) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = Number(value || 0).toLocaleString("fr-FR");
-      };
-      setText("glanceTotal", lastStats.totalOrders);
-      setText("glanceWait", lastStats.waiting);
-      setText("glancePause", lastStats.paused);
-      setText("glanceDone", lastStats.doneCount);
-    }
-
     async function ensureStoragePersistence() {
       if (!navigator.storage?.persist) return;
       try {
@@ -3263,7 +3199,6 @@
       };
       updateInsightsDisplay();
       updateMenuStats();
-      updateStatusGlance();
     }
 
     function sortItems(list) {
