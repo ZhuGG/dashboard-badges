@@ -391,6 +391,28 @@
       padding: clamp(18px, 3vw, 28px) clamp(18px, 3vw, 28px) clamp(14px, 2.5vw, 22px);
       display: grid;
       gap: clamp(12px, 2vw, 18px);
+      position: relative;
+      overflow: hidden;
+      border-radius: inherit;
+    }
+    .topbar::after {
+      content: "";
+      position: absolute;
+      inset: -40% -25% auto 42%;
+      height: 160px;
+      background: radial-gradient(
+        120% 140% at 0% 50%,
+        rgba(142, 250, 219, 0.32),
+        transparent 68%
+      );
+      opacity: 0.7;
+      filter: blur(34px);
+      pointer-events: none;
+      transform: translate3d(0, 0, 0);
+    }
+    .topbar > * {
+      position: relative;
+      z-index: 1;
     }
     .topbar__head {
       display: flex;
@@ -425,6 +447,12 @@
       font-size: 0.75rem;
       color: var(--text-subtle);
       letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+    .brand__text small {
+      font-size: 0.7rem;
+      color: var(--text-soft);
+      letter-spacing: 0.36px;
       text-transform: uppercase;
     }
     .topbar__actions {
@@ -463,6 +491,84 @@
     }
     .icon-btn:active {
       transform: translateY(1px) scale(0.98);
+    }
+    .status-glance {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      padding: 12px clamp(12px, 4vw, 18px);
+      border-radius: var(--radius-md);
+      background: var(--ghost-bg);
+      border: 1px dashed var(--ghost-border);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+    .status-glance__item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+    .status-glance__item span {
+      font-size: 0.72rem;
+      letter-spacing: 0.32px;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+    }
+    .status-glance__item strong {
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+    .status-glance__item[data-status="wait"] strong {
+      color: var(--accent);
+    }
+    .status-glance__item[data-status="pause"] strong {
+      color: var(--warn);
+    }
+    .status-glance__item[data-status="done"] strong {
+      color: var(--ok);
+    }
+    .smart-filter-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: var(--ghost-active-bg);
+      border: 1px solid var(--ghost-active-border);
+      color: var(--ghost-active-text);
+      font-weight: 600;
+      width: fit-content;
+    }
+    .smart-filter-badge__label {
+      font-size: 0.72rem;
+      letter-spacing: 0.36px;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+    }
+    .smart-filter-badge strong {
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0;
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .link-btn:hover {
+      text-decoration: underline;
+    }
+    .link-btn:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 6px;
     }
     .chip-row {
       display: flex;
@@ -546,6 +652,327 @@
     }
     .sort-select select:focus {
       outline: none;
+    }
+
+    .menu-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 6, 17, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.24s ease;
+      z-index: 75;
+    }
+    .menu-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .command-menu {
+      position: fixed;
+      top: clamp(24px, 8vh, 64px);
+      right: clamp(18px, 6vw, 48px);
+      width: min(460px, calc(100% - 36px));
+      max-height: calc(100vh - clamp(48px, 12vh, 96px));
+      overflow: hidden auto;
+      border-radius: 28px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 65%),
+        var(--surface-strong);
+      border: 1px solid var(--header-border);
+      box-shadow: var(--shadow-lg);
+      padding: clamp(20px, 4vw, 28px);
+      display: flex;
+      flex-direction: column;
+      gap: clamp(18px, 3vw, 26px);
+      transform: translateY(-14px) scale(0.94);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.24s ease, opacity 0.24s ease;
+      z-index: 90;
+    }
+    .command-menu[aria-hidden="true"] {
+      visibility: hidden;
+    }
+    .command-menu.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+      visibility: visible;
+    }
+    .command-menu__header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .command-menu__header h2 {
+      margin: 4px 0;
+      font-size: 1.45rem;
+    }
+    .command-menu__header p {
+      margin: 0;
+      color: var(--text-soft);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+    .command-menu__eyebrow {
+      margin: 0 0 6px;
+      font-size: 0.72rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+    }
+    .command-menu__close {
+      flex-shrink: 0;
+    }
+    .command-menu__section {
+      display: grid;
+      gap: 14px;
+    }
+    .command-menu__section-title {
+      font-size: 0.75rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+    }
+    .command-menu__section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .command-menu__stats {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+    .command-menu__stat {
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--ghost-border);
+      background: var(--ghost-bg);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 110px;
+    }
+    .command-menu__stat span {
+      font-size: 0.75rem;
+      letter-spacing: 0.32px;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+    }
+    .command-menu__stat strong {
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+    .command-menu__stat[data-kind="wait"] strong {
+      color: var(--accent);
+    }
+    .command-menu__stat[data-kind="pause"] strong {
+      color: var(--warn);
+    }
+    .command-menu__stat[data-kind="done"] strong {
+      color: var(--ok);
+    }
+    .command-menu__stat[data-kind="produced"] strong {
+      color: var(--accent-2);
+    }
+    .command-menu__stat small {
+      font-size: 0.78rem;
+      color: var(--text-soft);
+    }
+    .command-menu__progress {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+    .command-menu__progress-labels {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .command-menu__progress-bar {
+      grid-column: 1 / -1;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--insight-progress-bg);
+      position: relative;
+      overflow: hidden;
+    }
+    .command-menu__progress-bar span {
+      position: absolute;
+      inset: 0;
+      width: 0;
+      background: var(--brand-gradient);
+      border-radius: inherit;
+      box-shadow: 0 8px 18px rgba(142, 250, 219, 0.35);
+      transition: width 0.25s ease;
+    }
+    .command-menu__progress-value {
+      font-weight: 700;
+      font-size: 1rem;
+      justify-self: end;
+    }
+    .smart-filter__info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      align-items: center;
+      font-size: 0.85rem;
+      color: var(--text-soft);
+    }
+    .smart-filter__count strong {
+      font-size: 1rem;
+      color: var(--text);
+    }
+    .command-menu__smart-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+    .command-menu__smart {
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--ghost-border);
+      background: var(--ghost-bg);
+      color: var(--text-soft);
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .command-menu__smart:hover {
+      border-color: var(--ghost-hover-border);
+      background: var(--ghost-hover-bg);
+      color: var(--text);
+    }
+    .command-menu__smart-label {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+    .command-menu__smart small {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .command-menu__smart.is-active {
+      background: var(--brand-gradient);
+      border-color: transparent;
+      color: var(--btn-text);
+      box-shadow: 0 16px 34px rgba(8, 16, 30, 0.45);
+    }
+    .command-menu__smart.is-active .command-menu__smart-label {
+      color: var(--btn-text);
+    }
+    .command-menu__smart.is-active small {
+      color: rgba(7, 18, 31, 0.72);
+    }
+    .command-menu__toggles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .command-menu__toggle {
+      flex: 1 1 160px;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--control-border);
+      background: var(--control-bg);
+      color: var(--text-muted);
+      font-weight: 600;
+      text-align: left;
+      transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .command-menu__toggle:hover {
+      border-color: var(--ghost-hover-border);
+      background: var(--ghost-hover-bg);
+      color: var(--text);
+    }
+    .command-menu__toggle.is-active {
+      background: var(--brand-gradient);
+      border-color: transparent;
+      color: var(--btn-text);
+      box-shadow: 0 14px 30px rgba(8, 16, 30, 0.4);
+    }
+    .command-menu__actions {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+    .command-menu__action {
+      position: relative;
+      display: grid;
+      gap: 6px;
+      padding: 18px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--ghost-border);
+      background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 100%),
+        var(--surface-soft);
+      color: var(--text);
+      text-align: left;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .command-menu__action:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--ghost-hover-border);
+    }
+    .command-menu__action strong {
+      font-size: 1rem;
+    }
+    .command-menu__action span {
+      font-size: 0.82rem;
+      color: var(--text-soft);
+    }
+    .command-menu__icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      background: var(--ghost-bg);
+      border: 1px solid var(--ghost-border);
+      color: var(--ghost-text);
+    }
+    body.menu-open {
+      overflow: hidden;
+    }
+    @media (max-width: 720px) {
+      .status-glance {
+        display: flex;
+        overflow-x: auto;
+        padding: 12px clamp(16px, 5vw, 20px);
+      }
+      .status-glance__item {
+        min-width: 140px;
+      }
+    }
+    @media (max-width: 720px) {
+      .command-menu {
+        left: 50%;
+        right: auto;
+        top: clamp(16px, 8vh, 40px);
+        width: min(520px, calc(100% - 32px));
+        transform: translate(-50%, -18px) scale(0.92);
+      }
+      .command-menu.open {
+        transform: translate(-50%, 0) scale(1);
+      }
+      .command-menu__stats {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      }
+      .command-menu__actions {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      }
     }
 
     #insights {
@@ -1049,9 +1476,21 @@
           <div class="brand__text">
             <strong>Production badges</strong>
             <span>V‑MACH</span>
+            <small>Suivi temps réel des commandes</small>
           </div>
         </div>
         <div class="topbar__actions">
+          <button
+            id="menuBtn"
+            class="icon-btn"
+            type="button"
+            aria-expanded="false"
+            aria-controls="commandMenu"
+            aria-label="Menu principal"
+            title="Menu principal"
+          >
+            ☰
+          </button>
           <button
             id="insightToggle"
             class="icon-btn"
@@ -1070,6 +1509,29 @@
         <button class="chip" data-f="wait">En attente</button>
         <button class="chip" data-f="pause">En pause</button>
         <button class="chip" data-f="done">Terminées</button>
+      </div>
+      <div class="status-glance" id="statusGlance">
+        <div class="status-glance__item" data-status="total">
+          <span>Total suivi</span>
+          <strong id="glanceTotal">0</strong>
+        </div>
+        <div class="status-glance__item" data-status="wait">
+          <span>En attente</span>
+          <strong id="glanceWait">0</strong>
+        </div>
+        <div class="status-glance__item" data-status="pause">
+          <span>En pause</span>
+          <strong id="glancePause">0</strong>
+        </div>
+        <div class="status-glance__item" data-status="done">
+          <span>Terminées</span>
+          <strong id="glanceDone">0</strong>
+        </div>
+      </div>
+      <div class="smart-filter-badge" id="smartFilterBadge" hidden>
+        <span class="smart-filter-badge__label">Vue intelligente :</span>
+        <strong id="smartFilterBadgeLabel"></strong>
+        <button class="link-btn" type="button" data-smart-reset>Réinitialiser</button>
       </div>
       <div class="utility">
         <div class="search">
@@ -1093,6 +1555,129 @@
       </div>
     </div>
     </header>
+
+    <div class="menu-overlay" id="menuOverlay" hidden></div>
+    <nav class="command-menu" id="commandMenu" aria-hidden="true" tabindex="-1">
+      <header class="command-menu__header">
+        <div>
+          <p class="command-menu__eyebrow">Centre de contrôle</p>
+          <h2>Menu principal</h2>
+          <p>Accédez rapidement aux actions clés et à vos vues personnalisées.</p>
+        </div>
+        <button class="icon-btn command-menu__close" id="closeMenu" type="button" title="Fermer le menu">✕</button>
+      </header>
+
+      <section class="command-menu__section">
+        <span class="command-menu__section-title">Résumé en direct</span>
+        <div class="command-menu__stats">
+          <div class="command-menu__stat" data-kind="total">
+            <span>Total suivi</span>
+            <strong id="menuCountTotal">0</strong>
+            <small>Commandes actives</small>
+          </div>
+          <div class="command-menu__stat" data-kind="wait">
+            <span>En attente</span>
+            <strong id="menuCountWait">0</strong>
+            <small>À lancer</small>
+          </div>
+          <div class="command-menu__stat" data-kind="pause">
+            <span>En pause</span>
+            <strong id="menuCountPause">0</strong>
+            <small>Temporisées</small>
+          </div>
+          <div class="command-menu__stat" data-kind="done">
+            <span>Terminées</span>
+            <strong id="menuCountDone">0</strong>
+            <small>Clôturées</small>
+          </div>
+          <div class="command-menu__stat" data-kind="produced">
+            <span>Badges produits</span>
+            <strong id="menuProduced">0</strong>
+            <small>Total cumulé</small>
+          </div>
+        </div>
+        <div class="command-menu__progress">
+          <div class="command-menu__progress-labels">
+            <span>Progression globale</span>
+            <small id="menuCompletionSummary">0 / 0 commande</small>
+          </div>
+          <div class="command-menu__progress-bar" role="presentation">
+            <span id="menuCompletionBar"></span>
+          </div>
+          <span class="command-menu__progress-value" id="menuCompletionLabel">0 %</span>
+        </div>
+      </section>
+
+      <section class="command-menu__section">
+        <div class="command-menu__section-head">
+          <span class="command-menu__section-title">Vues intelligentes</span>
+          <button class="link-btn" type="button" data-smart-reset>Réinitialiser</button>
+        </div>
+        <p class="smart-filter__info">
+          <span id="smartFilterSummary">Toutes les commandes selon vos filtres.</span>
+          <span class="smart-filter__count"><strong id="smartFilterCount">0</strong> commande(s) visibles</span>
+        </p>
+        <div class="command-menu__smart-grid">
+          <button class="command-menu__smart" type="button" data-smart="default">
+            <span class="command-menu__smart-label">Vue standard</span>
+            <small>Respecte vos filtres et tris.</small>
+          </button>
+          <button class="command-menu__smart" type="button" data-smart="urgent">
+            <span class="command-menu__smart-label">Urgences</span>
+            <small>Commandes en attente depuis 90&nbsp;min+</small>
+          </button>
+          <button class="command-menu__smart" type="button" data-smart="highVolume">
+            <span class="command-menu__smart-label">Gros volumes</span>
+            <small>200 pièces et plus.</small>
+          </button>
+          <button class="command-menu__smart" type="button" data-smart="recentDone">
+            <span class="command-menu__smart-label">Terminées 24&nbsp;h</span>
+            <small>Clôturées ces dernières 24&nbsp;h.</small>
+          </button>
+        </div>
+      </section>
+
+      <section class="command-menu__section">
+        <span class="command-menu__section-title">Trier &amp; afficher</span>
+        <div class="command-menu__toggles">
+          <button class="command-menu__toggle" type="button" data-sort="recent">Plus récents</button>
+          <button class="command-menu__toggle" type="button" data-sort="oldest">Plus anciens</button>
+          <button class="command-menu__toggle" type="button" data-sort="qty">Gros volumes</button>
+          <button class="command-menu__toggle" type="button" data-sort="status">Par statut</button>
+        </div>
+        <div class="command-menu__toggles">
+          <button class="command-menu__toggle" type="button" data-theme-toggle="light">☀️ Thème clair</button>
+          <button class="command-menu__toggle" type="button" data-theme-toggle="dark">🌙 Thème sombre</button>
+          <button class="command-menu__toggle" type="button" data-preference-toggle="dense">🧱 Mode compact</button>
+        </div>
+      </section>
+
+      <section class="command-menu__section">
+        <span class="command-menu__section-title">Actions rapides</span>
+        <div class="command-menu__actions">
+          <button class="command-menu__action" type="button" data-menu-action="new">
+            <span class="command-menu__icon">＋</span>
+            <strong>Nouvelle commande</strong>
+            <span>Créez un badge immédiatement.</span>
+          </button>
+          <button class="command-menu__action" type="button" data-menu-action="open-insights">
+            <span class="command-menu__icon">📊</span>
+            <strong>Compteurs</strong>
+            <span>Ouvrir la synthèse des performances.</span>
+          </button>
+          <button class="command-menu__action" type="button" data-menu-action="open-settings">
+            <span class="command-menu__icon">⚙️</span>
+            <strong>Réglages</strong>
+            <span>Personnalisez l'expérience.</span>
+          </button>
+          <button class="command-menu__action" type="button" data-menu-action="export-email">
+            <span class="command-menu__icon">✉️</span>
+            <strong>Export e‑mail</strong>
+            <span>Préparez un récapitulatif à partager.</span>
+          </button>
+        </div>
+      </section>
+    </nav>
 
     <aside id="insights" class="insights-panel" aria-hidden="true">
       <div class="insights__head">
@@ -1324,6 +1909,32 @@
     const LAST_FORM = "vmach_last_form_v1";
     const FORM_HISTORY = "vmach_form_history_v1";
     const HISTORY_LIMIT = 120;
+    const SMART_FILTER_KEY = "vmach_smart_filter_v1";
+    const SMART_FILTERS = {
+      default: {
+        id: "default",
+        label: "Vue standard",
+        description: "Affiche toutes les commandes selon vos filtres et votre tri.",
+      },
+      urgent: {
+        id: "urgent",
+        label: "Urgences",
+        description: "Met en avant les commandes en attente depuis plus de 90 minutes.",
+      },
+      highVolume: {
+        id: "highVolume",
+        label: "Gros volumes",
+        description: "Filtre les commandes de 200 badges et plus.",
+      },
+      recentDone: {
+        id: "recentDone",
+        label: "Terminées 24 h",
+        description: "Affiche les commandes clôturées sur les dernières 24 heures.",
+      },
+    };
+    const URGENT_DELAY_MS = 90 * 60 * 1000;
+    const RECENT_DONE_MS = 24 * 60 * 60 * 1000;
+    const HIGH_VOLUME_QTY = 200;
 
     function isValidTheme(value) {
       return value === "light" || value === "dark";
@@ -1331,6 +1942,14 @@
 
     function resolveTheme(value) {
       return isValidTheme(value) ? value : DEFAULT_THEME;
+    }
+
+    function resolveSmartFilter(value) {
+      return SMART_FILTERS[value] ? value : "default";
+    }
+
+    function getSmartFilterConfig(value) {
+      return SMART_FILTERS[value] || SMART_FILTERS.default;
     }
 
     let items = load();
@@ -1352,6 +1971,15 @@
     let sortBy = localStorage.getItem("vmach_sort") || "recent";
     let editId = null;
     let liveTimer = null; // global unique (fix redeclaration)
+    let smartFilter = resolveSmartFilter(localStorage.getItem(SMART_FILTER_KEY));
+    if (smartFilter === "recentDone") {
+      filter = "done";
+    } else if ((smartFilter === "urgent" || smartFilter === "highVolume") && filter === "done") {
+      filter = "all";
+    }
+    let filterBeforeSmart = filter;
+
+    localStorage.setItem(SMART_FILTER_KEY, smartFilter);
 
     items = items.map(enrichItemState);
 
@@ -1820,6 +2448,45 @@
       if (completionBar) completionBar.style.width = `${completionPercent}%`;
     }
 
+    function updateMenuStats() {
+      const totalEl = document.getElementById("menuCountTotal");
+      if (totalEl) totalEl.textContent = (lastStats.totalOrders || 0).toLocaleString("fr-FR");
+      const waitEl = document.getElementById("menuCountWait");
+      if (waitEl) waitEl.textContent = (lastStats.waiting || 0).toLocaleString("fr-FR");
+      const pauseEl = document.getElementById("menuCountPause");
+      if (pauseEl) pauseEl.textContent = (lastStats.paused || 0).toLocaleString("fr-FR");
+      const doneEl = document.getElementById("menuCountDone");
+      if (doneEl) doneEl.textContent = (lastStats.doneCount || 0).toLocaleString("fr-FR");
+      const producedEl = document.getElementById("menuProduced");
+      if (producedEl) producedEl.textContent = (lastStats.produced || 0).toLocaleString("fr-FR");
+      const summaryEl = document.getElementById("menuCompletionSummary");
+      if (summaryEl) {
+        const done = lastStats.doneCount || 0;
+        const total = lastStats.totalOrders || 0;
+        summaryEl.textContent = `${done.toLocaleString("fr-FR")} / ${total.toLocaleString("fr-FR")} commande${
+          total > 1 ? "s" : ""
+        }`;
+      }
+      const completionValue = Math.max(0, Math.min(1, lastStats.completion || 0));
+      const completionPercent = Math.round(completionValue * 100);
+      const menuCompletionLabel = document.getElementById("menuCompletionLabel");
+      if (menuCompletionLabel)
+        menuCompletionLabel.textContent = `${completionPercent.toLocaleString("fr-FR")} %`;
+      const menuCompletionBar = document.getElementById("menuCompletionBar");
+      if (menuCompletionBar) menuCompletionBar.style.width = `${completionPercent}%`;
+    }
+
+    function updateStatusGlance() {
+      const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = Number(value || 0).toLocaleString("fr-FR");
+      };
+      setText("glanceTotal", lastStats.totalOrders);
+      setText("glanceWait", lastStats.waiting);
+      setText("glancePause", lastStats.paused);
+      setText("glanceDone", lastStats.doneCount);
+    }
+
     async function ensureStoragePersistence() {
       if (!navigator.storage?.persist) return;
       try {
@@ -2058,29 +2725,64 @@
     }
 
     /* ====== Theme & Settings ====== */
+    function markThemeActive(t) {
+      document.querySelectorAll("#themes [data-theme]").forEach((c) =>
+        c.classList.toggle("active", c.dataset.theme === t)
+      );
+    }
+
+    function updateMenuThemeButtons(theme) {
+      document.querySelectorAll("[data-theme-toggle]").forEach((btn) => {
+        const isActive = btn.dataset.themeToggle === theme;
+        btn.classList.toggle("is-active", isActive);
+        btn.setAttribute("aria-pressed", isActive ? "true" : "false");
+      });
+    }
+
+    function applyTheme(theme) {
+      const next = resolveTheme(theme);
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem(THEME, next);
+      markThemeActive(next);
+      updateMenuThemeButtons(next);
+    }
+
     (function initTheme() {
       const stored = localStorage.getItem(THEME);
       const theme = resolveTheme(stored);
       if (stored !== theme) {
         localStorage.setItem(THEME, theme);
       }
-      document.documentElement.setAttribute("data-theme", theme);
-      markThemeActive(theme);
+      applyTheme(theme);
     })();
 
-    function markThemeActive(t) {
-      document.querySelectorAll("#themes [data-theme]").forEach((c) =>
-        c.classList.toggle("active", c.dataset.theme === t)
-      );
-    }
     $("#themes").addEventListener("click", (e) => {
       const t = e.target?.dataset?.theme;
       if (!isValidTheme(t)) return;
-      document.documentElement.setAttribute("data-theme", t);
-      localStorage.setItem(THEME, t);
-      markThemeActive(t);
+      applyTheme(t);
       vibrate();
     });
+
+    function updateDenseButtons(isDense) {
+      document
+        .querySelectorAll('[data-preference-toggle="dense"]')
+        .forEach((btn) => {
+          btn.classList.toggle("is-active", !!isDense);
+          btn.setAttribute("aria-pressed", isDense ? "true" : "false");
+        });
+    }
+
+    function setDenseMode(enabled, { persist = true } = {}) {
+      const next = !!enabled;
+      prefs.dense = next;
+      if (persist) {
+        localStorage.setItem(P, JSON.stringify(prefs));
+      }
+      document.body.classList.toggle("dense", next);
+      const optDense = $("#optDense");
+      if (optDense) optDense.checked = next;
+      updateDenseButtons(next);
+    }
 
     const prefs = (() => {
       try {
@@ -2095,7 +2797,7 @@
     $("#optDur").checked = !!prefs.emailWithDur;
     $("#optHaptic").checked = !!prefs.haptic;
     $("#optDense").checked = !!prefs.dense;
-    if (prefs.dense) document.body.classList.add("dense");
+    setDenseMode(prefs.dense, { persist: false });
     $("#optDur").onchange = () => {
       prefs.emailWithDur = $("#optDur").checked;
       localStorage.setItem(P, JSON.stringify(prefs));
@@ -2105,9 +2807,7 @@
       localStorage.setItem(P, JSON.stringify(prefs));
     };
     $("#optDense").onchange = () => {
-      prefs.dense = $("#optDense").checked;
-      localStorage.setItem(P, JSON.stringify(prefs));
-      document.body.classList.toggle("dense", prefs.dense);
+      setDenseMode($("#optDense").checked);
     };
 
     $("#settingsBtn").onclick = () => {
@@ -2127,6 +2827,136 @@
         render();
       }
     };
+
+    const menuBtn = $("#menuBtn");
+    const commandMenu = $("#commandMenu");
+    const menuOverlay = $("#menuOverlay");
+    const closeMenuBtn = $("#closeMenu");
+    let lastMenuFocus = null;
+
+    function openMenu() {
+      if (!commandMenu) return;
+      lastMenuFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      commandMenu.classList.add("open");
+      commandMenu.setAttribute("aria-hidden", "false");
+      if (menuBtn) menuBtn.setAttribute("aria-expanded", "true");
+      if (menuOverlay) {
+        menuOverlay.hidden = false;
+        requestAnimationFrame(() => menuOverlay.classList.add("open"));
+      }
+      document.body.classList.add("menu-open");
+      document.addEventListener("keydown", handleMenuKeydown);
+      const focusTarget =
+        commandMenu.querySelector(".command-menu__smart.is-active") ||
+        commandMenu.querySelector("[data-smart]") ||
+        commandMenu.querySelector("button");
+      focusTarget?.focus({ preventScroll: true });
+    }
+
+    function closeMenu() {
+      if (!commandMenu) return;
+      commandMenu.classList.remove("open");
+      commandMenu.setAttribute("aria-hidden", "true");
+      if (menuBtn) menuBtn.setAttribute("aria-expanded", "false");
+      document.body.classList.remove("menu-open");
+      if (menuOverlay) {
+        menuOverlay.classList.remove("open");
+        setTimeout(() => {
+          if (!commandMenu.classList.contains("open")) {
+            menuOverlay.hidden = true;
+          }
+        }, 220);
+      }
+      document.removeEventListener("keydown", handleMenuKeydown);
+      if (lastMenuFocus && typeof lastMenuFocus.focus === "function") {
+        lastMenuFocus.focus({ preventScroll: true });
+      }
+      lastMenuFocus = null;
+    }
+
+    function handleMenuKeydown(event) {
+      if (event.key === "Escape") {
+        closeMenu();
+      }
+    }
+
+    function handleMenuAction(action) {
+      if (!action) return;
+      closeMenu();
+      switch (action) {
+        case "new":
+          openSheet();
+          break;
+        case "open-insights":
+          setInsightsOpen(true);
+          break;
+        case "open-settings":
+          $("#settingsBtn")?.click();
+          break;
+        case "export-email":
+          $("#exportEmail")?.click();
+          break;
+        default:
+          break;
+      }
+      vibrate();
+    }
+
+    if (menuBtn && commandMenu) {
+      menuBtn.addEventListener("click", () => {
+        if (commandMenu.classList.contains("open")) closeMenu();
+        else openMenu();
+        vibrate();
+      });
+    }
+    if (closeMenuBtn) {
+      closeMenuBtn.addEventListener("click", () => {
+        closeMenu();
+        vibrate();
+      });
+    }
+    if (menuOverlay) {
+      menuOverlay.addEventListener("click", () => {
+        closeMenu();
+      });
+    }
+
+    document.querySelectorAll("[data-menu-action]").forEach((btn) => {
+      btn.addEventListener("click", () => handleMenuAction(btn.dataset.menuAction));
+    });
+    document.querySelectorAll("[data-smart]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        setSmartFilter(btn.dataset.smart);
+        vibrate();
+      });
+    });
+    document.querySelectorAll("[data-smart-reset]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        setSmartFilter("default");
+        vibrate();
+        if (commandMenu?.classList.contains("open")) closeMenu();
+      });
+    });
+    document.querySelectorAll("[data-sort]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        setSort(btn.dataset.sort);
+        vibrate();
+      });
+    });
+    document.querySelectorAll("[data-theme-toggle]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        applyTheme(btn.dataset.themeToggle);
+        vibrate();
+      });
+    });
+    document
+      .querySelectorAll('[data-preference-toggle="dense"]')
+      .forEach((btn) => {
+        btn.addEventListener("click", () => {
+          setDenseMode(!prefs.dense);
+          vibrate();
+        });
+      });
 
     /* ====== Header offset ====== */
     function syncHeaderOffset() {
@@ -2206,16 +3036,79 @@
     updateInsightsDisplay();
 
     /* ====== Filters, search, sort ====== */
-    [...document.querySelectorAll("#filters button")].forEach((b) => {
-      b.onclick = () => {
-        [...document.querySelectorAll("#filters button")].forEach((x) =>
-          x.classList.remove("active")
-        );
-        b.classList.add("active");
-        filter = b.dataset.f;
+    function syncFilterChips() {
+      document.querySelectorAll("#filters .chip").forEach((chip) => {
+        chip.classList.toggle("active", chip.dataset.f === filter);
+      });
+    }
+
+    function setStatusFilter(value, { fromUser = false, skipRender = false } = {}) {
+      const next = value || "all";
+      const changed = filter !== next;
+      filter = next;
+      if (fromUser) {
+        filterBeforeSmart = next;
+      } else if (smartFilter === "default") {
+        filterBeforeSmart = next;
+      }
+      if (skipRender) {
+        syncFilterChips();
+        return;
+      }
+      if (changed) {
         render();
+      } else {
+        syncFilterChips();
+        updateSmartFilterUI();
+        updateSmartFilterBadge();
+      }
+    }
+
+    function setSort(value, { skipRender = false } = {}) {
+      const next = value || "recent";
+      if (sortBy === next) {
+        updateSortMenuUI();
+        if (!skipRender) render();
+        return;
+      }
+      sortBy = next;
+      localStorage.setItem("vmach_sort", sortBy);
+      const select = $("#sortBy");
+      if (select) select.value = sortBy;
+      updateSortMenuUI();
+      if (!skipRender) render();
+    }
+
+    function setSmartFilter(next) {
+      const resolved = resolveSmartFilter(next);
+      if (resolved === smartFilter) {
+        updateSmartFilterUI();
+        updateSmartFilterBadge();
+        return;
+      }
+      const previousSmart = smartFilter;
+      smartFilter = resolved;
+      localStorage.setItem(SMART_FILTER_KEY, smartFilter);
+      if (previousSmart === "default" && smartFilter !== "default") {
+        filterBeforeSmart = filter;
+      }
+      if (smartFilter === "default") {
+        setStatusFilter(filterBeforeSmart, { skipRender: true });
+      } else if (smartFilter === "recentDone") {
+        setStatusFilter("done", { skipRender: true });
+      } else if (smartFilter === "urgent" || smartFilter === "highVolume") {
+        if (filter === "done") {
+          setStatusFilter("all", { skipRender: true });
+        }
+      }
+      render();
+    }
+
+    [...document.querySelectorAll("#filters button")].forEach((b) => {
+      b.addEventListener("click", () => {
+        setStatusFilter(b.dataset.f, { fromUser: true });
         vibrate();
-      };
+      });
     });
     $("#q").oninput = (e) => {
       search = e.target.value.trim().toLowerCase();
@@ -2223,9 +3116,8 @@
     };
     $("#sortBy").value = sortBy;
     $("#sortBy").onchange = (e) => {
-      sortBy = e.target.value;
-      localStorage.setItem("vmach_sort", sortBy);
-      render();
+      setSort(e.target.value);
+      vibrate();
     };
 
     /* ====== Add/Edit Sheet ====== */
@@ -2370,6 +3262,8 @@
         doneCount: doneItems.length,
       };
       updateInsightsDisplay();
+      updateMenuStats();
+      updateStatusGlance();
     }
 
     function sortItems(list) {
@@ -2386,17 +3280,77 @@
       return copy;
     }
 
+    function applySmartFilter(list, ts) {
+      if (!Array.isArray(list)) return [];
+      if (smartFilter === "urgent") {
+        return list.filter((item) => {
+          if (!item || item.status === "done") return false;
+          const startRef = item.lastResumeTime || item.startTime || 0;
+          if (!startRef) return false;
+          return ts - startRef >= URGENT_DELAY_MS;
+        });
+      }
+      if (smartFilter === "highVolume") {
+        return list.filter((item) => Number(item?.qty) >= HIGH_VOLUME_QTY);
+      }
+      if (smartFilter === "recentDone") {
+        return list.filter((item) => {
+          if (!item || item.status !== "done") return false;
+          const end = item.endTime || item.startTime || 0;
+          if (!end) return false;
+          return ts - end <= RECENT_DONE_MS;
+        });
+      }
+      return list;
+    }
+
+    function updateSmartFilterUI(visibleCount = 0) {
+      document.querySelectorAll("[data-smart]").forEach((btn) => {
+        const isActive = btn.dataset.smart === smartFilter;
+        btn.classList.toggle("is-active", isActive);
+        btn.setAttribute("aria-pressed", isActive ? "true" : "false");
+      });
+      const summary = document.getElementById("smartFilterSummary");
+      if (summary) summary.textContent = getSmartFilterConfig(smartFilter).description;
+      const countEl = document.getElementById("smartFilterCount");
+      if (countEl) countEl.textContent = Number(visibleCount).toLocaleString("fr-FR");
+    }
+
+    function updateSmartFilterBadge() {
+      const badge = document.getElementById("smartFilterBadge");
+      if (!badge) return;
+      const labelEl = document.getElementById("smartFilterBadgeLabel");
+      if (smartFilter === "default") {
+        badge.hidden = true;
+        return;
+      }
+      badge.hidden = false;
+      if (labelEl) labelEl.textContent = getSmartFilterConfig(smartFilter).label;
+    }
+
+    function updateSortMenuUI() {
+      document.querySelectorAll("[data-sort]").forEach((btn) => {
+        const isActive = btn.dataset.sort === sortBy;
+        btn.classList.toggle("is-active", isActive);
+        btn.setAttribute("aria-pressed", isActive ? "true" : "false");
+      });
+    }
+
     function render() {
       items.forEach(enrichItemState);
       computeStats();
       updateHistorySuggestions();
       const list = listEl;
 
+      syncFilterChips();
+
       // stop previous live timer (global unique)
       if (liveTimer) {
         clearInterval(liveTimer);
         liveTimer = null;
       }
+
+      const nowTs = now();
 
       // filter + search
       const filtered = items.filter((i) => {
@@ -2418,8 +3372,8 @@
         return s.includes(search);
       });
 
-      const nowTs = now();
-      const show = sortItems(filtered);
+      const smartFiltered = applySmartFilter(filtered, nowTs);
+      const show = sortItems(smartFiltered);
 
       list.innerHTML = show
         .map((i) => {
@@ -2464,6 +3418,10 @@
         `;
         })
         .join("");
+
+      updateSmartFilterUI(show.length);
+      updateSmartFilterBadge();
+      updateSortMenuUI();
 
       const hasItems = show.length > 0;
       if (emptyStateEl) emptyStateEl.hidden = hasItems;
