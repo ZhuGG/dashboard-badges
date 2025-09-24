@@ -19,9 +19,11 @@ const normalizeToken = (token) =>
 
 const detectDelimiter = (line) => {
   if (!line) return ";";
+
   if (line.includes(";")) return ";";
   if (line.includes(",")) return ",";
   return ";";
+
 };
 
 const splitCsvLine = (line, delimiter) => {
@@ -80,6 +82,7 @@ const looksLikeHeader = (cells) => {
 
 const parseQuantity = (value) => {
   if (value == null) return null;
+
   const original = String(value);
   let normalized = original.trim();
   if (!normalized) return null;
@@ -101,6 +104,7 @@ const parseQuantity = (value) => {
   if (!Number.isFinite(num) || num <= 0) return null;
   const rounded = Math.round(num);
   return rounded >= 1 ? rounded : null;
+
 };
 
 const parseDeadline = (value) => {
