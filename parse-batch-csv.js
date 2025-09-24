@@ -19,10 +19,11 @@ const normalizeToken = (token) =>
 
 const detectDelimiter = (line) => {
   if (!line) return ";";
-  const semi = (line.match(/;/g) || []).length;
-  const comma = (line.match(/,/g) || []).length;
-  if (semi === 0 && comma === 0) return ";";
-  return semi >= comma ? ";" : ",";
+
+  if (line.includes(";")) return ";";
+  if (line.includes(",")) return ",";
+  return ";";
+
 };
 
 const splitCsvLine = (line, delimiter) => {
@@ -81,11 +82,29 @@ const looksLikeHeader = (cells) => {
 
 const parseQuantity = (value) => {
   if (value == null) return null;
-  const normalized = String(value).replace(/[^0-9]/g, "");
+
+  const original = String(value);
+  let normalized = original.trim();
   if (!normalized) return null;
-  const num = Number.parseInt(normalized, 10);
+  normalized = normalized.replace(/\s+/g, "").replace(/[^0-9.,-]/g, "");
+  if (!normalized) return null;
+  const hadComma = original.includes(",");
+  normalized = normalized.replace(/,/g, ".");
+  const parts = normalized.split(".");
+  if (parts.length > 2) {
+    const decimals = parts.pop();
+    normalized = parts.join("") + "." + decimals;
+  } else if (parts.length === 2) {
+    const [intPart, fracPart] = parts;
+    if (!hadComma && fracPart.length === 3) {
+      normalized = intPart + fracPart;
+    }
+  }
+  const num = Number.parseFloat(normalized);
   if (!Number.isFinite(num) || num <= 0) return null;
-  return num;
+  const rounded = Math.round(num);
+  return rounded >= 1 ? rounded : null;
+
 };
 
 const parseDeadline = (value) => {
