@@ -14,7 +14,7 @@
 
   <!-- Fonts & Favicon -->
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap"
     rel="stylesheet"
   />
   <link
@@ -210,7 +210,7 @@
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-family: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
       overflow-x: clip;
       overscroll-behavior-x: contain;
       background:
@@ -244,6 +244,63 @@
       box-shadow: var(--shadow-lg);
       min-height: 0;
       padding-bottom: calc(140px + var(--safe-bottom));
+    }
+
+    .dashboard-summary {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0))
+          , var(--surface-soft);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: clamp(14px, 2vw, 18px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .summary-card {
+      position: relative;
+      display: grid;
+      gap: 8px;
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
+      border: 1px solid var(--ghost-border);
+    }
+
+    .summary-card__label {
+      font-size: 0.8rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+    }
+
+    .summary-card__value {
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.1;
+    }
+
+    .summary-card__meta {
+      color: var(--text-soft);
+      font-size: 0.9rem;
+    }
+
+    .summary-progress {
+      height: 10px;
+      border-radius: 999px;
+      background: var(--ghost-bg);
+      border: 1px solid var(--ghost-border);
+      overflow: hidden;
+    }
+
+    .summary-progress span {
+      display: block;
+      height: 100%;
+      background: var(--brand-gradient);
+      border-radius: inherit;
+      transition: width 0.3s ease;
     }
 
     @media (max-width: 720px) {
@@ -1575,6 +1632,52 @@
     </nav>
 
     <main class="page-main">
+      <section class="dashboard-summary" aria-label="Synthèse en temps réel">
+        <div class="summary-card">
+          <span class="summary-card__label">Commandes totales</span>
+          <strong class="summary-card__value" id="statTotal">0</strong>
+          <div class="summary-card__meta">Toutes les entrées disponibles</div>
+        </div>
+        <div class="summary-card">
+          <span class="summary-card__label">Commandes visibles</span>
+          <strong class="summary-card__value" id="statVisible">0</strong>
+          <div class="summary-progress" aria-hidden="true">
+            <span id="statVisibleBar" style="width:0%"></span>
+          </div>
+          <div class="summary-card__meta">Après filtres et tri actifs</div>
+        </div>
+        <div class="summary-card">
+          <span class="summary-card__label">En production</span>
+          <strong class="summary-card__value" id="statWait">0</strong>
+          <div class="summary-card__meta">Commandes en cours</div>
+        </div>
+        <div class="summary-card">
+          <span class="summary-card__label">En pause</span>
+          <strong class="summary-card__value" id="statPause">0</strong>
+          <div class="summary-card__meta">En attente d'action</div>
+        </div>
+        <div class="summary-card">
+          <span class="summary-card__label">Terminées</span>
+          <strong class="summary-card__value" id="statDone">0</strong>
+          <div class="summary-card__meta">Total clôturé</div>
+        </div>
+        <div class="summary-card">
+          <span class="summary-card__label">Échéances 48h</span>
+          <strong class="summary-card__value" id="statDue">0</strong>
+          <div class="summary-card__meta">Prochaines priorités</div>
+        </div>
+        <div class="summary-card">
+          <span class="summary-card__label">Quantité engagée</span>
+          <strong class="summary-card__value" id="statQty">0</strong>
+          <div class="summary-card__meta">Pièces sur le périmètre visible</div>
+        </div>
+        <div class="summary-card">
+          <span class="summary-card__label">Durée moyenne</span>
+          <strong class="summary-card__value" id="statDuration">0</strong>
+          <div class="summary-card__meta">Basée sur les terminées</div>
+        </div>
+      </section>
+
       <div id="emptyState" class="empty-state" hidden>
         <strong>Aucune commande</strong>
         Ajoutez votre première commande pour démarrer la production.
@@ -3054,6 +3157,44 @@
       });
     }
 
+    function computeDashboardStats(visible, all, nowTs) {
+      const total = Array.isArray(all) ? all.length : 0;
+      const visibleCount = Array.isArray(visible) ? visible.length : 0;
+      const wait = visible.filter((i) => i.status === "wait").length;
+      const pause = visible.filter((i) => i.status === "pause").length;
+      const done = visible.filter((i) => i.status === "done").length;
+      const dueSoon = visible.filter(
+        (i) => i.deadline && i.status !== "done" && i.deadline - nowTs <= 48 * 3600 * 1000
+      ).length;
+      const qty = visible.reduce((acc, i) => acc + (Number(i.qty) || 0), 0);
+      const durations = visible
+        .filter((i) => i.status === "done" && Number.isFinite(i.durationSec))
+        .map((i) => i.durationSec);
+      const avgDurationSec = durations.length
+        ? durations.reduce((a, b) => a + b, 0) / durations.length
+        : 0;
+      return { total, visibleCount, wait, pause, done, dueSoon, qty, avgDurationSec };
+    }
+
+    function updateDashboardSummary(stats) {
+      const { total, visibleCount, wait, pause, done, dueSoon, qty, avgDurationSec } = stats;
+      const safeRatio = total > 0 ? Math.min(100, Math.round((visibleCount / total) * 100)) : 0;
+      const set = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+      };
+      set("statTotal", Number(total).toLocaleString("fr-FR"));
+      set("statVisible", Number(visibleCount).toLocaleString("fr-FR"));
+      const bar = document.getElementById("statVisibleBar");
+      if (bar) bar.style.width = `${safeRatio}%`;
+      set("statWait", Number(wait).toLocaleString("fr-FR"));
+      set("statPause", Number(pause).toLocaleString("fr-FR"));
+      set("statDone", Number(done).toLocaleString("fr-FR"));
+      set("statDue", Number(dueSoon).toLocaleString("fr-FR"));
+      set("statQty", Number(qty).toLocaleString("fr-FR"));
+      set("statDuration", avgDurationSec ? fmtDur(avgDurationSec) : "–");
+    }
+
     function render() {
       items.forEach(enrichItemState);
       updateHistorySuggestions();
@@ -3095,6 +3236,8 @@
 
       const smartFiltered = applySmartFilter(filtered, nowTs);
       const show = sortItems(smartFiltered);
+
+      updateDashboardSummary(computeDashboardStats(show, items, nowTs));
 
       list.innerHTML = show
         .map((i) => {
